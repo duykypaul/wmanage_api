@@ -18,7 +18,7 @@ import javax.persistence.Table;
 public class Material extends BaseEntity {
     private String materialNo;
     private Integer length;
-    private boolean isVisible;
+    private String status;// active, inactive, plan
     private String cutterHeadNo;
     private String cutterHeadNoUsed;
     private String cutterLineNo;

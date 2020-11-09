@@ -2,9 +2,9 @@ package com.duykypaul.wmanage_api.config;
 
 
 import com.duykypaul.wmanage_api.common.Constant;
-import com.duykypaul.wmanage_api.model.ERole;
-import com.duykypaul.wmanage_api.model.Role;
-import com.duykypaul.wmanage_api.model.User;
+import com.duykypaul.wmanage_api.model.*;
+import com.duykypaul.wmanage_api.repository.BranchRepository;
+import com.duykypaul.wmanage_api.repository.MaterialTypeRepository;
 import com.duykypaul.wmanage_api.repository.RoleRepository;
 import com.duykypaul.wmanage_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,9 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -23,6 +25,12 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private MaterialTypeRepository materialTypeRepository;
+
+    @Autowired
+    private BranchRepository branchRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -42,6 +50,24 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
             roleRepository.save(new Role(ERole.ROLE_USER));
         }
 
+        // Add list MaterialType
+        List<MaterialType> materialTypeList = new ArrayList<>();
+        Constant.MATERIAL_TYPE.LST_MATERIAL_TYPE.forEach(item -> {
+            materialTypeList.add(new MaterialType(item.getKey(), item.getValue()));
+        });
+        if (materialTypeRepository.count() == 0) {
+            materialTypeRepository.saveAll(materialTypeList);
+        }
+
+        // Add list Branch
+        List<Branch> branchList = new ArrayList<>();
+        Constant.BRANCH.LST_BRANCH.forEach(item -> {
+            branchList.add(new Branch(item.getValue0(), item.getValue1(), item.getValue2()));
+        });
+        if (branchRepository.count() == 0) {
+            branchRepository.saveAll(branchList);
+        }
+
         // Admin account
         if (!userRepository.findByEmail(Constant.Auth.ADMIN_EMAIL).isPresent()) {
             User admin = new User();
@@ -54,27 +80,8 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
             roles.add(roleRepository.findByName(ERole.ROLE_USER).get());
             admin.setRoles(roles);
             admin.setEnabled(true);
+            admin.setBranch(branchRepository.findByBranchName("HaNoi").get());
             userRepository.save(admin);
         }
-
-        // Add list category
-       /* Constant.Category.LST_CATEGORY.forEach(item -> {
-            if (!categoryRepository.existsByName(item)) {
-                categoryRepository.save(new Category(item));
-            }
-        });*/
-
-        // Add Post
-        /*if (!(postRepository.count() > 0)) {
-            for (int i = 0; i < 10; i++) {
-                Post post = new Post();
-                post.setCategories(new HashSet<>(Collections.singletonList(categoryRepository.findById((long) (Math.random() * 10)).get())));
-                post.setContent("test" + i + Math.random() * 10);
-                post.setUrlImage(Constant.Post.LST_URL_IMAGE.get(i));
-                post.setUser(userRepository.findByEmail(Constant.Auth.ADMIN_EMAIL).get());
-                postRepository.saveAndFlush(post);
-            }
-        }*/
-
     }
 }

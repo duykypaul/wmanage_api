@@ -1,5 +1,8 @@
 package com.duykypaul.wmanage_api.common;
 
+import javafx.util.Pair;
+import org.javatuples.Triplet;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -22,20 +25,29 @@ public class Constant {
         public static final String AVATAR_DEFAULT = "avatar_default.jpg";
     }
 
-    public static class Category {
-        public static final List<String> LST_CATEGORY = Arrays.asList(
-            "Ảnh troll", "Cách gặp ma", "Clip funvl", "Xác ướp", "Ảo tưởng sức mạnh", "Running man", "Ảnh bựa VL", "Faptv", "500 anh em",
-            "Ancient aliens", "Video cảm động", "Siêu nhân", "Video kinh dị", "Thánh cuồng", "Comment hài", "Nhạc Remix hay", "Ảnh ấn tượng",
-            "Pháo hoa Tết", "Ji Suk Jin", "Cao Bá Hưng", "Hài Quang Thắng", "Xăm trổ", "Chuyện tình lãng mạn", "Giang hồ");
+    public static class MATERIAL_TYPE {
+        public static final List<Pair<String, String>> LST_MATERIAL_TYPE =
+            Arrays.asList(
+                new Pair<>("A", "6X150X150"),
+                new Pair<>("A", "6X200X200"),
+                new Pair<>("A", "6X250X250"),
+                new Pair<>("B", "6X150X150"),
+                new Pair<>("B", "6X200X200"),
+                new Pair<>("B", "6X250X250"),
+                new Pair<>("A", "8X150X150"),
+                new Pair<>("A", "8X200X200"),
+                new Pair<>("A", "8X250X250"),
+                new Pair<>("B", "8X150X150"),
+                new Pair<>("B", "8X200X200"),
+                new Pair<>("B", "8X250X250")
+            );
     }
-
-    public static class Post {
-        public static final List<String> LST_URL_IMAGE = Arrays.asList(
-            "https://i.memeful.com/media/post/GMEZxyR_700wa_0.gif", "https://i.memeful.com/media/post/ER5rbyd_700wa_0.gif",
-            "https://i.memeful.com/media/post/lMzzGBM_700wa_0.gif", "https://i.memeful.com/media/post/edvgX8w_700wa_0.gif",
-            "https://i.memeful.com/media/post/odgmQGM_700wa_0.gif", "https://i.memeful.com/media/post/edvEj5R_700wa_0.gif",
-            "https://i.memeful.com/media/post/kRp6z2w_700wa_0.gif", "https://i.memeful.com/media/post/mdGW0Vd_700wa_0.gif",
-            "https://i.memeful.com/media/post/NwrGA7M_700wa_0.gif", "https://i.memeful.com/media/post/YMKmXGd_700wa_0.gif"
-        );
+    public static class BRANCH {
+        public static final List<Triplet<String, String, Integer>> LST_BRANCH =
+            Arrays.asList(
+                new Triplet<>("SG", "SaiGon", 10000),
+                new Triplet<>("DN", "DaNang", 5000),
+                new Triplet<>("HN", "HaNoi", 12000)
+            );
     }
 }
