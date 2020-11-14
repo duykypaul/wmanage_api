@@ -1,5 +1,6 @@
 package com.duykypaul.wmanage_api.controllers;
 
+import com.duykypaul.wmanage_api.beans.MaterialBean;
 import com.duykypaul.wmanage_api.services.MaterialService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,5 +30,10 @@ public class MaterialController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> findUserById(@PathVariable Long id) {
         return null;
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteAllByIdIn(@RequestBody MaterialBean materialBean) {
+        return materialService.deleteAllByIdIn(materialBean.getIds());
     }
 }

@@ -9,5 +9,7 @@ public interface MaterialService {
     ResponseEntity<?> saveALL(UserBean userBean);
     ResponseEntity<?> findById(Long id);
     ResponseEntity<?> findAll(Integer pageNo, Integer pageSize, String sortBy);
+    ResponseEntity<?> deleteAllByIdIn(Long[] ids);
     String generateMaterialNo();
+
 }

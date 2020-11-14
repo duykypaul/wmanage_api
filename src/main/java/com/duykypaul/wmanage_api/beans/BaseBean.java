@@ -24,4 +24,6 @@ public class BaseBean<U> {
     private boolean isDeleted;
 
     private List<U> listResult = new ArrayList<>();
+
+    private Long[] ids;
 }
