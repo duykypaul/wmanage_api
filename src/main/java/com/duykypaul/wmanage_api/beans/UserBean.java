@@ -24,15 +24,9 @@ public class UserBean extends BaseBean<UserBean> {
 
     private Set<RoleBean> roles;
 
-    private String firstName;
-    private String lastName;
-    private String description;
-    private String gender;
-    private String yourViewed;
-    private String youViewed;
-    private String lastLogin;
-    private String profilePicture;
-    private String profileViews;
+    private BranchBean branch;
+
+    private String avatar;
     private String permission;
     private boolean isEnabled;
     //    @NotBlank

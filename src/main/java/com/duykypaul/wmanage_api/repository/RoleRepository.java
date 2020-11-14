@@ -1,7 +1,7 @@
 package com.duykypaul.wmanage_api.repository;
 
 
-import com.duykypaul.wmanage_api.model.ERole;
+import com.duykypaul.wmanage_api.common.ERole;
 import com.duykypaul.wmanage_api.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 

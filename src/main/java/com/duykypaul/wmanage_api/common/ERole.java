@@ -1,4 +1,4 @@
-package com.duykypaul.wmanage_api.model;
+package com.duykypaul.wmanage_api.common;
 
 public enum ERole {
     ROLE_USER,

@@ -1,5 +1,6 @@
 package com.duykypaul.wmanage_api.model;
 
+import com.duykypaul.wmanage_api.common.ERole;
 import lombok.Getter;
 import lombok.Setter;
 

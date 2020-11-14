@@ -21,5 +21,7 @@ public class BaseBean<U> {
 
     private Date modifiedAt;
 
+    private boolean isDeleted;
+
     private List<U> listResult = new ArrayList<>();
 }

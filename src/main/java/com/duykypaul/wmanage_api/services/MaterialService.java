@@ -1,15 +1,13 @@
 package com.duykypaul.wmanage_api.services;
 
 
-import com.duykypaul.wmanage_api.payload.request.LoginReq;
+import com.duykypaul.wmanage_api.beans.UserBean;
 import org.springframework.http.ResponseEntity;
 
-public interface UserService {
-    ResponseEntity<?> signIn(LoginReq loginReq);
-
-    ResponseEntity<?> findById(Long id);
-
+public interface MaterialService {
     ResponseEntity<?> findAll();
-
+    ResponseEntity<?> saveALL(UserBean userBean);
+    ResponseEntity<?> findById(Long id);
     ResponseEntity<?> findAll(Integer pageNo, Integer pageSize, String sortBy);
+    String generateMaterialNo();
 }

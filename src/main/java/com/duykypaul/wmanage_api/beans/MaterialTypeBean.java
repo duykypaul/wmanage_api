@@ -1,7 +1,5 @@
 package com.duykypaul.wmanage_api.beans;
 
-
-import com.duykypaul.wmanage_api.common.ERole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleBean {
-    private Long id;
-    private ERole name;
+public class MaterialTypeBean extends BaseBean<MaterialTypeBean> {
+    private String materialType;
+    private String materialTypeName;
+    private String dimension;
 }

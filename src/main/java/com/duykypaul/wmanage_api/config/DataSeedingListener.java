@@ -2,11 +2,11 @@ package com.duykypaul.wmanage_api.config;
 
 
 import com.duykypaul.wmanage_api.common.Constant;
+import com.duykypaul.wmanage_api.common.EMaterialStatus;
+import com.duykypaul.wmanage_api.common.ERole;
+import com.duykypaul.wmanage_api.common.Utils;
 import com.duykypaul.wmanage_api.model.*;
-import com.duykypaul.wmanage_api.repository.BranchRepository;
-import com.duykypaul.wmanage_api.repository.MaterialTypeRepository;
-import com.duykypaul.wmanage_api.repository.RoleRepository;
-import com.duykypaul.wmanage_api.repository.UserRepository;
+import com.duykypaul.wmanage_api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -33,6 +33,9 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
     private BranchRepository branchRepository;
 
     @Autowired
+    private MaterialRepository materialRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -53,7 +56,7 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
         // Add list MaterialType
         List<MaterialType> materialTypeList = new ArrayList<>();
         Constant.MATERIAL_TYPE.LST_MATERIAL_TYPE.forEach(item -> {
-            materialTypeList.add(new MaterialType(item.getKey(), item.getValue()));
+            materialTypeList.add(new MaterialType(item.getValue0(), item.getValue1(), item.getValue2()));
         });
         if (materialTypeRepository.count() == 0) {
             materialTypeRepository.saveAll(materialTypeList);
@@ -74,6 +77,7 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
             admin.setEmail(Constant.Auth.ADMIN_EMAIL);
             admin.setPassword(passwordEncoder.encode(Constant.Auth.ADMIN_PASSWORD));
             admin.setUsername(Constant.Auth.ADMIN_NAME);
+            admin.setAvatar(Constant.Auth.AVATAR);
             Set<Role> roles = new HashSet<>();
             roles.add(roleRepository.findByName(ERole.ROLE_ADMIN).get());
             roles.add(roleRepository.findByName(ERole.ROLE_MODERATOR).get());
@@ -82,6 +86,23 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
             admin.setEnabled(true);
             admin.setBranch(branchRepository.findByBranchName("HaNoi").get());
             userRepository.save(admin);
+        }
+
+
+        // Add list Material
+        List<Material> materialList = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Material material = new Material();
+            material.setBranch(branchRepository.getOne(1L));
+            material.setMaterialNo("SG" + Utils.LeadZeroNumber(i + 1, 5));
+            material.setLength(Constant.LENGTH_DEFAULT);
+            material.setStatus(EMaterialStatus.ACTIVE.name());
+            material.setMaterialType(materialTypeRepository.getOne(1L));
+            material.setDeleted(i % 2 == 0);
+            materialList.add(material);
+        }
+        if (materialRepository.count() == 0) {
+            materialRepository.saveAll(materialList);
         }
     }
 }

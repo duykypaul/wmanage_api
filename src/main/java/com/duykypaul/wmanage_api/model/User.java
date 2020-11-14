@@ -33,7 +33,7 @@ public class User extends BaseEntity {
     @NotBlank
     @Size(max = 120)
     private String password;
-    private String profilePicture;
+    private String avatar;
     private String permission;
     private boolean isEnabled;
 

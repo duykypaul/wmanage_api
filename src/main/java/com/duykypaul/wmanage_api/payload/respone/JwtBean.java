@@ -8,13 +8,13 @@ import lombok.Setter;
 @Setter
 public class JwtBean {
     private int status;
-    private UserBean userBean;
+    private UserBean user;
     private String token;
     private String type = "Bearer";
 
-    public JwtBean(int status, String token, UserBean userBean) {
+    public JwtBean(int status, String token, UserBean user) {
         this.token = token;
-        this.userBean = userBean;
+        this.user = user;
         this.status = status;
     }
 }
