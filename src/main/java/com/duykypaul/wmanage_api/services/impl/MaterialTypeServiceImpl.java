@@ -7,8 +7,6 @@ import com.duykypaul.wmanage_api.repository.MaterialTypeRepository;
 import com.duykypaul.wmanage_api.services.MaterialTypeService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,6 @@ import java.util.List;
 @Service
 @Transactional
 public class MaterialTypeServiceImpl implements MaterialTypeService {
-    private static final Logger logger = LoggerFactory.getLogger(MaterialTypeServiceImpl.class);
-
     @Autowired
     MaterialTypeRepository materialTypeRepository;
 

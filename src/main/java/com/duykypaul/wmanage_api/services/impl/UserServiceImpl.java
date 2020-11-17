@@ -11,9 +11,8 @@ import com.duykypaul.wmanage_api.repository.RoleRepository;
 import com.duykypaul.wmanage_api.repository.UserRepository;
 import com.duykypaul.wmanage_api.security.jwt.JwtUtils;
 import com.duykypaul.wmanage_api.services.UserService;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,10 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Log4j2
 @Service
 public class UserServiceImpl implements UserService {
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
     @Autowired
     AuthenticationManager authenticationManager;
 
@@ -71,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
             return ResponseEntity.ok(new JwtBean(HttpStatus.OK.value(), jwtToken, userBean));
         } catch (AuthenticationException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.ok(new MessageBean(HttpStatus.UNAUTHORIZED.value(), "Email or password invalid!"));
         }
     }
@@ -83,7 +81,7 @@ public class UserServiceImpl implements UserService {
             UserBean userBean = modelMapper.map(user, UserBean.class);
             return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), userBean, "Success"));
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             return ResponseEntity.ok(new ResponseBean(HttpStatus.UNAUTHORIZED.value(), null, "UnAuthorized"));
         }
     }

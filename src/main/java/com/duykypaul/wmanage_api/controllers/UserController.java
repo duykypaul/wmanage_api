@@ -2,8 +2,7 @@ package com.duykypaul.wmanage_api.controllers;
 
 import com.duykypaul.wmanage_api.common.Constant;
 import com.duykypaul.wmanage_api.services.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
@@ -16,12 +15,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Log4j2
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
     @Autowired
     UserService userService;
 
@@ -54,7 +52,7 @@ public class UserController {
                     .contentType(MediaType.parseMediaType("image/png"))
                     .body(byteArrayResource);
             } catch (IOException io) {
-                logger.error(io.getMessage(), io);
+                log.error(io.getMessage(), io);
             }
         }
         return ResponseEntity.badRequest().build();

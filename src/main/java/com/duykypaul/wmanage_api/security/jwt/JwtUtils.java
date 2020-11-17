@@ -2,8 +2,7 @@ package com.duykypaul.wmanage_api.security.jwt;
 
 import com.duykypaul.wmanage_api.security.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -12,10 +11,9 @@ import org.springframework.util.StringUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
+@Log4j2
 @Component
 public class JwtUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtils.class);
-
     @Value("${duykypaul.app.jwtSecret}")
     private String jwtSecret;
 
@@ -47,15 +45,15 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException e) {
-            LOGGER.error("Invalid JWT signature: {}", e.getMessage());
+            log.error("Invalid JWT signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
-            LOGGER.error("Invalid JWT token: {}", e.getMessage());
+            log.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            LOGGER.error("JWT token is expired: {}", e.getMessage());
+            log.error("JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            LOGGER.error("JWT token is unsupported: {}", e.getMessage());
+            log.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            LOGGER.error("JWT claims string is empty: {}", e.getMessage());
+            log.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
     }

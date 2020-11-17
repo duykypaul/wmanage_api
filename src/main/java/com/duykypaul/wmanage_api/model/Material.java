@@ -1,20 +1,16 @@
 package com.duykypaul.wmanage_api.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
-@Entity
 @Getter
 @Setter
+@Entity
+@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "material")
+@Table(name = "material", uniqueConstraints=@UniqueConstraint(columnNames="materialNo"))
 public class Material extends BaseEntity {
     private String materialNo;
     private Integer length;

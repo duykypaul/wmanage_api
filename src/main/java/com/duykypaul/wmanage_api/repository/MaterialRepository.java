@@ -17,4 +17,6 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
     @Query("UPDATE Material SET isDeleted = true WHERE id IN ?1")
     void deleteAllByIdIn(List<Long> ids);
 
+    @Query("SELECT MAX(SUBSTRING(m.materialNo, 3)) FROM Material m where m.branch.id = ?1 and m.isDeleted = false")
+    String generateMaterialNo(Long branchId);
 }
