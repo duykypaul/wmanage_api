@@ -2,14 +2,17 @@ package com.duykypaul.wmanage_api.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 
-@Getter
-@Setter
-@Entity
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Data
+@SuperBuilder
 @NoArgsConstructor
+@AllArgsConstructor
+@Entity
 @Table(name = "material", uniqueConstraints=@UniqueConstraint(columnNames="materialNo"))
 public class Material extends BaseEntity {
     private String materialNo;

@@ -3,7 +3,6 @@ package com.duykypaul.wmanage_api.services.impl;
 
 import com.duykypaul.wmanage_api.beans.UserBean;
 import com.duykypaul.wmanage_api.model.User;
-import com.duykypaul.wmanage_api.payload.request.LoginReq;
 import com.duykypaul.wmanage_api.payload.respone.JwtBean;
 import com.duykypaul.wmanage_api.payload.respone.MessageBean;
 import com.duykypaul.wmanage_api.payload.respone.ResponseBean;
@@ -27,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
     ModelMapper modelMapper;
 
     @Override
-    public ResponseEntity<?> signIn(LoginReq loginReq) {
+    public ResponseEntity<?> signIn(@Valid UserBean loginReq) {
         try {
             UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(loginReq.getUsername(), loginReq.getPassword());
             Authentication authentication = authenticationManager.authenticate(authReq);

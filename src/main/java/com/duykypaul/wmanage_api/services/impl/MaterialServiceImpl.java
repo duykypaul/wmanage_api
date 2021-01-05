@@ -1,6 +1,5 @@
 package com.duykypaul.wmanage_api.services.impl;
 
-
 import com.duykypaul.wmanage_api.beans.MaterialBean;
 import com.duykypaul.wmanage_api.common.EMaterialStatus;
 import com.duykypaul.wmanage_api.common.Utils;
@@ -70,12 +69,13 @@ public class MaterialServiceImpl implements MaterialService {
                 BranchAndMaterialNo.put(key, BranchAndMaterialNo.getOrDefault(key, maxMaterialNoCurrent));
                 for (int i = 0; i < item.getQuantity(); i++) {
                     BranchAndMaterialNo.put(key, 1 + BranchAndMaterialNo.get(key));
-                    Material material = new Material();
-                    material.setMaterialNo(key + Utils.LeadZeroNumber(BranchAndMaterialNo.get(key), 5));
-                    material.setLength(item.getLength());
-                    material.setStatus(EMaterialStatus.ACTIVE.name());
-                    material.setBranch(branch);
-                    material.setMaterialType(materialType);
+                    Material material = Material.builder()
+                        .branch(branch)
+                        .materialNo(key + Utils.LeadZeroNumber(BranchAndMaterialNo.get(key), 5))
+                        .length(item.getLength())
+                        .status(EMaterialStatus.ACTIVE.name())
+                        .materialType(materialType)
+                        .build();
 
                     materials.add(material);
                 }

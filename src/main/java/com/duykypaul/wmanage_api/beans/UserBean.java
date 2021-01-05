@@ -1,23 +1,27 @@
 package com.duykypaul.wmanage_api.beans;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
-@Getter
-@Setter
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserBean extends BaseBean<UserBean> {
     @JsonIgnore
     MultipartFile fileImage;
-    //    @NotBlank
+    //@NotBlank
     @Size(min = 3, max = 20)
     private String username;
-    //    @NotBlank
+    //@NotBlank
     @Email
     @Size(max = 50)
     private String email;
@@ -29,7 +33,7 @@ public class UserBean extends BaseBean<UserBean> {
     private String avatar;
     private String permission;
     private boolean isEnabled;
-    //    @NotBlank
+    //@NotBlank
     @Size(min = 6, max = 30)
     private String password;
 }

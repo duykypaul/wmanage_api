@@ -1,7 +1,7 @@
 package com.duykypaul.wmanage_api.controllers;
 
 
-import com.duykypaul.wmanage_api.payload.request.LoginReq;
+import com.duykypaul.wmanage_api.beans.UserBean;
 import com.duykypaul.wmanage_api.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class AuthController {
     UserService userService;
 
     @PostMapping
-    public ResponseEntity<?> signIn(@Valid @RequestBody LoginReq loginReq) {
-        return userService.signIn(loginReq);
+    public ResponseEntity<?> signIn(@Valid @RequestBody UserBean UserBean) {
+        return userService.signIn(UserBean);
     }
 }

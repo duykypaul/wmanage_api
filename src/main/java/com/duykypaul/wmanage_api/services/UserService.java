@@ -1,11 +1,13 @@
 package com.duykypaul.wmanage_api.services;
 
 
-import com.duykypaul.wmanage_api.payload.request.LoginReq;
+import com.duykypaul.wmanage_api.beans.UserBean;
 import org.springframework.http.ResponseEntity;
 
+import javax.validation.Valid;
+
 public interface UserService {
-    ResponseEntity<?> signIn(LoginReq loginReq);
+    ResponseEntity<?> signIn(@Valid UserBean loginReq);
 
     ResponseEntity<?> findById(Long id);
 

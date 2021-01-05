@@ -1,17 +1,16 @@
 package com.duykypaul.wmanage_api.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -23,11 +22,16 @@ public class Order extends BaseEntity {
     @Size(max = 120)
     private String customer;
     private String deliveryAddress;
-    private Date expectedDeliveryDate;
-    private Integer numberStack;
+    @Temporal(TemporalType.DATE)
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private Date deliveryDate;
 
     @ManyToOne
     @JsonManagedReference
     @JoinColumn(name = "branch_id")
     private Branch branch;
+
+    @OneToMany(mappedBy = "order")
+    @JsonManagedReference
+    private List<Consignment> consignments;
 }
