@@ -32,7 +32,7 @@ public class Consignment extends BaseEntity {
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date expectedDeliveryDate;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JsonBackReference
     @JoinColumn(name = "order_id")
     private Order order;

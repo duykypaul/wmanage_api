@@ -44,10 +44,6 @@ public class ConsignmentServiceImpl implements ConsignmentService {
             List<Consignment> consignments = consignmentRepository.findAllByIsDeletedIsFalse();
             consignments.forEach(consignment -> {
                 ConsignmentBean consignmentBean = modelMapper.map(consignment, ConsignmentBean.class);
-                /*OrderBean orderBean = modelMapper.map(consignment.getOrder(), OrderBean.class);
-                consignmentBean.setOrder(orderBean);
-                MaterialTypeBean materialTypeBean = modelMapper.map(consignment.getMaterialType(), MaterialTypeBean.class);
-                consignmentBean.setMaterialType(materialTypeBean);*/
                 consignmentBeans.add(consignmentBean);
             });
         } catch (Exception e) {

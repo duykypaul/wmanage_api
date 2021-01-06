@@ -10,14 +10,13 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @Table(name = "orders")
-public class Order extends BaseEntity {
+public class  Order extends BaseEntity {
     @NotBlank
     @Size(max = 120)
     private String customer;
@@ -31,7 +30,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "branch_id")
     private Branch branch;
 
-    @OneToMany(mappedBy = "order")
+    /*@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Consignment> consignments;
+    private List<Consignment> consignments;*/
 }

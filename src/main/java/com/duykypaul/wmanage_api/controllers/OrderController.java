@@ -54,6 +54,15 @@ public class OrderController {
             log.error(e.getMessage(), e);
             throw new RuntimeException("Error");
         }
+    }
 
+    @DeleteMapping
+    public ResponseEntity<?> deleteAllByIdIn(@RequestBody Long[] ids) {
+        try {
+            return orderService.deleteAllByIdIn(ids);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException("Error");
+        }
     }
 }

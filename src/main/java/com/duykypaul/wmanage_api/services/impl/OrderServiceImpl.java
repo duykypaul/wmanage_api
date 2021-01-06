@@ -1,5 +1,6 @@
 package com.duykypaul.wmanage_api.services.impl;
 
+import com.duykypaul.wmanage_api.beans.ConsignmentBean;
 import com.duykypaul.wmanage_api.beans.MaterialTypeBean;
 import com.duykypaul.wmanage_api.beans.OrderBean;
 import com.duykypaul.wmanage_api.model.Branch;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -46,10 +48,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ResponseEntity<?> findAll() {
         List<OrderBean> orderBeans = new ArrayList<>();
+        List<ConsignmentBean> consignmentBeans = new ArrayList<>();
         try {
+            List<Consignment> consignments = consignmentRepository.findAllByIsDeletedIsFalse();
+            consignments.forEach(consignment -> {
+                ConsignmentBean consignmentBean = modelMapper.map(consignment, ConsignmentBean.class);
+                consignmentBeans.add(consignmentBean);
+            });
             List<Order> orders = orderRepository.findAllByIsDeletedIsFalse();
             orders.forEach(order -> {
                 OrderBean orderBean = modelMapper.map(order, OrderBean.class);
+                List<ConsignmentBean> consignmentBeansByOrderId = consignmentBeans.stream()
+                                                                    .filter(item -> item.getOrder().getId().equals(orderBean.getId()))
+                                                                    .collect(Collectors.toList());
+                orderBean.setConsignments(consignmentBeansByOrderId);
                 orderBeans.add(orderBean);
             });
         } catch (Exception e) {
@@ -61,7 +73,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ResponseEntity<?> saveOrder(OrderBean orderBean) {
         try {
-
             Order order = modelMapper.map(orderBean, Order.class);
             Branch branch = branchRepository.findByBranchCode(orderBean.getBranch().getBranchCode())
                 .orElseThrow(() -> new RuntimeException("Branch code notfound"));
@@ -101,6 +112,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ResponseEntity<?> deleteAllByIdIn(Long[] ids) {
-        return ResponseEntity.ok(null);
+        try {
+            consignmentRepository.deleteByIdIn(ids);
+            orderRepository.deleteByIdIn(ids);
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, "success"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "error"));
     }
 }
