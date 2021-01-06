@@ -16,6 +16,7 @@ import java.util.List;
 public class OrderBean extends BaseBean<OrderBean> {
     private String customer;
     private String deliveryAddress;
+    private String status;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date deliveryDate;

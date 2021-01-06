@@ -60,4 +60,31 @@ public class Constant {
                 new Triplet<>("HN", "HaNoi", 12000)
             );
     }
+
+    public static class ORDER {
+        public static class INVENTORY_STATUS {
+            /*
+            * mới nhập kho
+            */
+            private static final String IMPORTED = "IMPORTED";
+            /*
+            * đã đưa vào kế hoạch gia công
+            */
+            private static final String PLAN = "PLAN";
+            /*
+             * đã gia công xong
+             */
+            private static final String TORIAI = "PLAN";
+            /*
+            * đã xuất kho
+             */
+            private static final String EXPORTED = "PLAN";
+        }
+        public enum INVENTORY_ORDER_STATUS {
+            IMPORTED,
+            PLAN,
+            TORIAI,
+            EXPORTED
+        }
+    }
 }

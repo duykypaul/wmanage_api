@@ -16,10 +16,9 @@ import java.util.Date;
 @Table(name = "consignments")
 public class Consignment extends BaseEntity {
     /*
-     * quy tắc sinh chuỗi {materialTypeCode}1{dimension}9
+     * quy tắc sinh chuỗi {materialTypeCode}1{dimension}9{orderID}
      */
     @NotBlank
-    @Size(max = 10)
     private String consignmentNo;
 
     @Size(max = 120)
@@ -27,6 +26,7 @@ public class Consignment extends BaseEntity {
     private String deliveryAddress;
     private Integer length;
     private Integer quantity;
+    private String status;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern="yyyy-MM-dd")

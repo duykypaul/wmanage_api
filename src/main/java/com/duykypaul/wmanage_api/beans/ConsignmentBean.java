@@ -21,6 +21,7 @@ public class ConsignmentBean extends BaseBean<ConsignmentBean> {
     private Date expectedDeliveryDate;
     private Integer length;
     private Integer quantity;
+    private String status;
 
 //    @JsonBackReference
     private OrderBean order;

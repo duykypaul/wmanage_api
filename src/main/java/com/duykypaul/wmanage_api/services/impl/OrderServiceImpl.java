@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
                 MaterialTypeBean materialTypeBean = item.getMaterialType();
                 MaterialType materialType = materialTypeRepository.findByMaterialTypeAndDimension(materialTypeBean.getMaterialType(), materialTypeBean.getDimension())
                     .orElseThrow(() -> new RuntimeException("materialType notfound"));
-
+                consignment.setConsignmentNo(consignment.getConsignmentNo() + "X" + finalOrder.getId());
                 consignment.setMaterialType(materialType);
                 consignment.setOrder(finalOrder);
 

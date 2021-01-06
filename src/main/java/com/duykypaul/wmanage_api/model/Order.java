@@ -21,6 +21,8 @@ public class  Order extends BaseEntity {
     @Size(max = 120)
     private String customer;
     private String deliveryAddress;
+    private String status;
+
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date deliveryDate;
