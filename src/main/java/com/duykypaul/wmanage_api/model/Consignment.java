@@ -16,13 +16,14 @@ import java.util.Date;
 @Table(name = "consignments")
 public class Consignment extends BaseEntity {
     /*
-     * quy tắc sinh chuỗi {materialTypeCode}1{dimension}9{orderID}
+     * quy tắc sinh chuỗi {materialTypeCode}{dimension}N{orderID}
      */
     @NotBlank
     private String consignmentNo;
 
-    @Size(max = 120)
+    @Size(max = 44)
     private String customer;
+    @Size(max = 44)
     private String deliveryAddress;
     private Integer length;
     private Integer quantity;

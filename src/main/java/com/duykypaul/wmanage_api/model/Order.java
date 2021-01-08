@@ -18,8 +18,9 @@ import java.util.Date;
 @Table(name = "orders")
 public class  Order extends BaseEntity {
     @NotBlank
-    @Size(max = 120)
+    @Size(max = 44)
     private String customer;
+    @Size(max = 44)
     private String deliveryAddress;
     private String status;
 
