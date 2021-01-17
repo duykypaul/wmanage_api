@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/toriais")
-public class ToriaiController extends BaseController{
+public class ToriaiController extends BaseController {
 
     @Autowired
     ToriaiHeadService toriaiHeadService;
@@ -29,6 +29,15 @@ public class ToriaiController extends BaseController{
         }
     }
 
+    @GetMapping("/new-toriai-head-no/{branchName}")
+    public ResponseEntity<?> getNewToriaiHeadNo(@PathVariable String branchName) {
+        try {
+            return toriaiHeadService.getNewToriaiHeadNo(branchName);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "getNewToriaiHeadNo error!"));
+        }
+    }
 
     @PostMapping("/exeAlgorithm")
     public ResponseEntity<?> exeAlgorithm(@RequestBody ToriaiHeadBean toriaiHeadBean) {
@@ -40,9 +49,8 @@ public class ToriaiController extends BaseController{
         }
     }
 
-
     @PostMapping
-    public ResponseEntity<?> saveOrder(@RequestBody ToriaiHeadBean toriaiHeadBean) {
+    public ResponseEntity<?> saveToriai(@RequestBody ToriaiHeadBean toriaiHeadBean) {
         try {
             return toriaiHeadService.saveToriai(toriaiHeadBean);
         } catch (Exception e) {

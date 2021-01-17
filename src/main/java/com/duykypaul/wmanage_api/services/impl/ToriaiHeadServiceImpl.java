@@ -122,6 +122,20 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
     }
 
     @Override
+    public ResponseEntity<?> getNewToriaiHeadNo(String branchName) {
+        try {
+            Branch branch = branchRepository.findByBranchName(branchName)
+                .orElseThrow(() -> new RuntimeException("Branch code notfound"));
+            int maxNoCurrent = Integer.parseInt(toriaiHeadRepository.getMaxNoCurrent(branch.getId()));
+            String newToriaiHeadNo = branch.getBranchCode() + Utils.LeadZeroNumber(maxNoCurrent + 1, 5);
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), newToriaiHeadNo, "success"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "error"));
+    }
+
+    @Override
     public ResponseEntity<?> deleteAllByIdIn(Long[] ids) {
         try {
             toriaiHeadRepository.deleteByIdIn(ids);

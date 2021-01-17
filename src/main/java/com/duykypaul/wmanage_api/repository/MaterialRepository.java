@@ -17,10 +17,10 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
     @Query("UPDATE Material SET isDeleted = true WHERE id IN ?1")
     void deleteAllByIdIn(List<Long> ids);
 
-    @Query("SELECT COALESCE(MAX(SUBSTRING(m.materialNo, 4, 8)), 0) FROM Material m WHERE m.branch.id = ?1 AND m.isDeleted = false")
+    @Query("SELECT COALESCE(MAX(SUBSTRING(m.materialNo, 4, 8)), 0) FROM Material m WHERE m.branch.id = ?1")
     String generateMaterialNo(Long branchId);
 
-    @Query("SELECT COALESCE(MAX(SUBSTRING(m.materialNo, 4, 8)), 0) FROM Material m WHERE m.branch.branchName = ?1 AND m.isDeleted = false")
+    @Query("SELECT COALESCE(MAX(SUBSTRING(m.materialNo, 4, 8)), 0) FROM Material m WHERE m.branch.branchName = ?1")
     String generateMaterialNoByBranchName(String branchName);
 
     @Query("FROM Material m " +
