@@ -26,6 +26,7 @@ public class ToriaiHead extends BaseEntity {
 
     private Integer totalLengthExpected;
     private Integer totalQuantity;
+    private Integer totalLengthUsed;
     private Integer totalLengthRemain;
     private Integer rateUse;
     private Integer rateRemain;

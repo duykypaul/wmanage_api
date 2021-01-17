@@ -1,7 +1,8 @@
 package com.duykypaul.wmanage_api.services.impl;
 
 import com.duykypaul.wmanage_api.beans.MaterialBean;
-import com.duykypaul.wmanage_api.common.Constant;
+import com.duykypaul.wmanage_api.beans.MaterialTypeBean;
+import com.duykypaul.wmanage_api.common.CommonConst;
 import com.duykypaul.wmanage_api.common.Utils;
 import com.duykypaul.wmanage_api.model.Branch;
 import com.duykypaul.wmanage_api.model.Material;
@@ -65,16 +66,16 @@ public class MaterialServiceImpl implements MaterialService {
                 MaterialType materialType = materialTypeRepository.findByMaterialTypeAndDimension(item.getMaterialType(), item.getDimension())
                     .orElseThrow(() -> new RuntimeException("MaterialType code notfound"));
                 int maxMaterialNoCurrent = Integer.parseInt(materialRepository.generateMaterialNo(branch.getId()));
-                String key = Constant.MATERIAL.SEI_KBN.B.name() + branch.getBranchCode().toUpperCase();
+                String key = CommonConst.MATERIAL.SEI_KBN.B.name() + branch.getBranchCode().toUpperCase();
                 BranchAndMaterialNo.put(key, BranchAndMaterialNo.getOrDefault(key, maxMaterialNoCurrent));
                 for (int i = 0; i < item.getQuantity(); i++) {
                     BranchAndMaterialNo.put(key, 1 + BranchAndMaterialNo.get(key));
                     Material material = Material.builder()
                         .branch(branch)
                         .materialNo(key + Utils.LeadZeroNumber(BranchAndMaterialNo.get(key), 8))
-                        .seiKbn(Constant.MATERIAL.SEI_KBN.B.name())
+                        .seiKbn(CommonConst.MATERIAL.SEI_KBN.B.name())
                         .length(item.getLength())
-                        .status(Constant.MATERIAL.STATUS.ACTIVE.name())
+                        .status(CommonConst.MATERIAL.STATUS.ACTIVE.name())
                         .materialType(materialType)
                         .build();
 
@@ -113,5 +114,35 @@ public class MaterialServiceImpl implements MaterialService {
     @Override
     public String generateMaterialNo() {
         return null;
+    }
+
+    @Override
+    public List<MaterialBean> getAllBySeiKBN_B(String toriaiHeadNo, String branchName, MaterialTypeBean materialTypeBean) {
+        List<MaterialBean> materialBeans = new ArrayList<>();
+        try {
+            List<Material> materials = materialRepository.getAllBySeiKBN_B(toriaiHeadNo, branchName, materialTypeBean.getMaterialTypeName(), materialTypeBean.getDimension());
+            materialBeans = modelMapper.map(materials, CommonConst.MATERIAL.TYPE_LIST_BEAN);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return materialBeans;
+    }
+
+    @Override
+    public List<MaterialBean> getAllBySeiKBN_YR(String toriaiHeadNo, String branchName, MaterialTypeBean materialType,
+                                                String typeToriai, Integer minOrder) {
+        List<MaterialBean> materialBeans = new ArrayList<>();
+        try {
+            List<Material> materials = materialRepository.getAllBySeiKBN_YR(toriaiHeadNo, branchName, materialType.getMaterialTypeName(), materialType.getDimension(), minOrder);
+            materialBeans = modelMapper.map(materials, CommonConst.MATERIAL.TYPE_LIST_BEAN);
+            if(typeToriai.equals(CommonConst.TORIAI.TYPE_TORIAI.FAST.name())) {
+                materialBeans.sort(Comparator.comparing(MaterialBean::getLength).reversed());
+            } else {
+                materialBeans.sort(Comparator.comparing(MaterialBean::getLength));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return materialBeans;
     }
 }

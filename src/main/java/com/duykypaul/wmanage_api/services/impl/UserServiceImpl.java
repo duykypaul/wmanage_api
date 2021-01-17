@@ -87,6 +87,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findByUsername(String username) {
+        try {
+            return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Error: User Id is not found"));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+
+    }
+
+    @Override
     public ResponseEntity<?> findAll() {
         List<User> users = userRepository.findAll();
         return convertListUserToUserBean(users);

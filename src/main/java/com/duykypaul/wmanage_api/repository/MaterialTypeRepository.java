@@ -9,6 +9,9 @@ import java.util.Optional;
 
 public interface MaterialTypeRepository extends JpaRepository<MaterialType, Long> {
     Optional<MaterialType> findByMaterialTypeAndDimension(String materialType, String dimension);
+
+    Optional<MaterialType> findByMaterialTypeNameAndDimension(String materialTypeName, String dimension);
+
     Boolean existsByMaterialTypeAndDimension(String materialType, String dimension);
 
     @Query("FROM MaterialType u WHERE u.isDeleted = false GROUP BY u.materialType, u.materialTypeName")

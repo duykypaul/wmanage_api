@@ -1,6 +1,6 @@
 package com.duykypaul.wmanage_api.scheduler;
 
-import com.duykypaul.wmanage_api.common.Constant;
+import com.duykypaul.wmanage_api.common.CommonConst;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,15 +32,15 @@ public class ScheduledTasks {
         String backupDateStr = format.format(backupDate);
         String dbName = "wmanage_api"; // default file name
 
-        Path path = Paths.get(Constant.BACKUP_DB);
+        Path path = Paths.get(CommonConst.BACKUP_DB);
         if (!Files.exists(path)) {
             Files.createDirectories(path);
         }
 
-        String saveFileName = dbName + "_" + backupDateStr + "_" + new Date().getTime() + ".sql";
+        String saveFileName = dbName + CommonConst.UNDERSCORE + backupDateStr + CommonConst.UNDERSCORE + new Date().getTime() + ".sql";
         String savePath = path.toAbsolutePath() + File.separator + saveFileName;
 
-        String executeCmd = "mysqldump -u " + dbUsername + " -p" + dbPassword + " -P " + Constant.DB_PORT + " " + dbName + " -r " + savePath;
+        String executeCmd = "mysqldump -u " + dbUsername + " -p" + dbPassword + " -P " + CommonConst.DB_PORT + " " + dbName + " -r " + savePath;
 
         Process runtimeProcess = null;
         try {

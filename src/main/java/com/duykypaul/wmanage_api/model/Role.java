@@ -1,6 +1,6 @@
 package com.duykypaul.wmanage_api.model;
 
-import com.duykypaul.wmanage_api.common.Constant.AUTH.ROLE;
+import com.duykypaul.wmanage_api.common.CommonConst.AUTH.ROLE;
 import lombok.Getter;
 import lombok.Setter;
 

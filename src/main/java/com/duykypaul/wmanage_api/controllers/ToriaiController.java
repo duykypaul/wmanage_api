@@ -1,66 +1,50 @@
 package com.duykypaul.wmanage_api.controllers;
 
-import com.duykypaul.wmanage_api.beans.OrderBean;
 import com.duykypaul.wmanage_api.beans.ToriaiHeadBean;
-import com.duykypaul.wmanage_api.services.ConsignmentService;
-import com.duykypaul.wmanage_api.services.OrderService;
+import com.duykypaul.wmanage_api.payload.respone.ResponseBean;
+import com.duykypaul.wmanage_api.services.ToriaiHeadService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Log4j2
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/orders")
-public class OrderController {
+@RequestMapping("/api/toriais")
+public class ToriaiController extends BaseController{
 
     @Autowired
-    OrderService orderService;
+    ToriaiHeadService toriaiHeadService;
 
-    @Autowired
-    ConsignmentService consignmentService;
 
     @GetMapping
     public ResponseEntity<?> findAll() {
         try {
-            return orderService.findAll();
+            return toriaiHeadService.findAll();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException("Error");
         }
     }
 
-    @GetMapping("/consignments")
-    public ResponseEntity<?> findAllConsignments() {
-        try {
-            return consignmentService.findAll();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException("Error");
-        }
-    }
 
-    @GetMapping("/exeAlgorithm")
+    @PostMapping("/exeAlgorithm")
     public ResponseEntity<?> exeAlgorithm(@RequestBody ToriaiHeadBean toriaiHeadBean) {
         try {
-            return consignmentService.findAll();
+            return toriaiHeadService.exeAlgorithm(toriaiHeadBean, getUser());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException("Error");
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "algorithm error!"));
         }
-    }
-
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<?> findUserById(@PathVariable Long id) {
-        return null;
     }
 
 
     @PostMapping
-    public ResponseEntity<?> saveOrder(@RequestBody OrderBean orderBean) {
+    public ResponseEntity<?> saveOrder(@RequestBody ToriaiHeadBean toriaiHeadBean) {
         try {
-            return orderService.saveOrder(orderBean);
+            return toriaiHeadService.saveToriai(toriaiHeadBean);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException("Error");
@@ -70,7 +54,7 @@ public class OrderController {
     @DeleteMapping
     public ResponseEntity<?> deleteAllByIdIn(@RequestBody Long[] ids) {
         try {
-            return orderService.deleteAllByIdIn(ids);
+            return toriaiHeadService.deleteAllByIdIn(ids);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException("Error");

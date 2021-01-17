@@ -1,12 +1,16 @@
 package com.duykypaul.wmanage_api.common;
 
+import com.duykypaul.wmanage_api.beans.MaterialBean;
+import com.duykypaul.wmanage_api.model.Material;
 import org.javatuples.Triplet;
+import org.modelmapper.TypeToken;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
-public class Constant {
+public class CommonConst {
     public static final String DCOM_API_URL = "http://localhost:1102/api";
     public static final String DCOM_VUE_URL = "http://localhost:8080/verify-email";
     public static final String UPLOAD_ROOT = "uploads";
@@ -16,6 +20,23 @@ public class Constant {
     public static final int DB_PORT = 3308;
     public static final String COMMA = ",";
     public static final Integer LENGTH_DEFAULT = 13000;
+    public static final String BLANK = "";
+    public static final String SPACE = " ";
+    public static final String UNDERSCORE = "_";
+    public static final String STEEL_BLADE_THICKNESS = "5";
+    public static final String NUMBER_0 = "0";
+    public static final String NUMBER_1 = "1";
+    public static final String NUMBER_2 = "2";
+    public static final String NUMBER_3 = "3";
+    public static final String NUMBER_4 = "4";
+    public static final String NUMBER_5 = "5";
+    public static final String NUMBER_6 = "6";
+    public static final String NUMBER_7 = "7";
+    public static final String NUMBER_8 = "8";
+    public static final String NUMBER_9 = "9";
+    public static final String NUMBER_10 = "10";
+    public static final String NUMBER_100 = "100";
+    public static final String NUMBER_1000 = "1000";
 
     public static class AUTH {
         public static final String ADMIN_EMAIL = "lminh9812@gmail.com";
@@ -60,16 +81,14 @@ public class Constant {
     }
 
     public static class MATERIAL {
-        public static final List<Triplet<String, String, Integer>> LST_BRANCH =
-            Arrays.asList(
-                new Triplet<>("SG", "SaiGon", 10000),
-                new Triplet<>("DN", "DaNang", 5000),
-                new Triplet<>("HN", "HaNoi", 12000)
-            );
+        public static final Type TYPE_LIST_BEAN = new TypeToken<List<MaterialBean>>() {}.getType();
+        public static final Type TYPE_LIST_ENTITY = new TypeToken<List<Material>>() {}.getType();
+
         public enum STATUS {
             ACTIVE,
             INACTIVE,
-            PLAN
+            PLAN,
+            FAKE
         }
 
         public enum SEI_KBN {
@@ -112,7 +131,10 @@ public class Constant {
              */
             EXPORTED
         }
+    }
 
+    public static class TORIAI {
+        public static final int NUMBER_COLUMN_RETSU = 12;
         public enum TYPE_TORIAI {
             FAST,
             SAVES

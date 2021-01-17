@@ -1,7 +1,7 @@
 package com.duykypaul.wmanage_api.config;
 
 
-import com.duykypaul.wmanage_api.common.Constant;
+import com.duykypaul.wmanage_api.common.CommonConst;
 import com.duykypaul.wmanage_api.common.Utils;
 import com.duykypaul.wmanage_api.model.*;
 import com.duykypaul.wmanage_api.repository.*;
@@ -39,21 +39,21 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         // Add Roles
-        if (!roleRepository.findByName(Constant.AUTH.ROLE.ROLE_ADMIN).isPresent()) {
-            roleRepository.save(new Role(Constant.AUTH.ROLE.ROLE_ADMIN));
+        if (!roleRepository.findByName(CommonConst.AUTH.ROLE.ROLE_ADMIN).isPresent()) {
+            roleRepository.save(new Role(CommonConst.AUTH.ROLE.ROLE_ADMIN));
         }
 
-        if (!roleRepository.findByName(Constant.AUTH.ROLE.ROLE_MODERATOR).isPresent()) {
-            roleRepository.save(new Role(Constant.AUTH.ROLE.ROLE_MODERATOR));
+        if (!roleRepository.findByName(CommonConst.AUTH.ROLE.ROLE_MODERATOR).isPresent()) {
+            roleRepository.save(new Role(CommonConst.AUTH.ROLE.ROLE_MODERATOR));
         }
 
-        if (!roleRepository.findByName(Constant.AUTH.ROLE.ROLE_USER).isPresent()) {
-            roleRepository.save(new Role(Constant.AUTH.ROLE.ROLE_USER));
+        if (!roleRepository.findByName(CommonConst.AUTH.ROLE.ROLE_USER).isPresent()) {
+            roleRepository.save(new Role(CommonConst.AUTH.ROLE.ROLE_USER));
         }
 
         // Add list MaterialType
         List<MaterialType> materialTypeList = new ArrayList<>();
-        Constant.MATERIAL_TYPE.LST_MATERIAL_TYPE.forEach(item -> {
+        CommonConst.MATERIAL_TYPE.LST_MATERIAL_TYPE.forEach(item -> {
             materialTypeList.add(new MaterialType(item.getValue0(), item.getValue1(), item.getValue2()));
         });
         if (materialTypeRepository.count() == 0) {
@@ -62,7 +62,7 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
 
         // Add list Branch
         List<Branch> branchList = new ArrayList<>();
-        Constant.BRANCH.LST_BRANCH.forEach(item -> {
+        CommonConst.BRANCH.LST_BRANCH.forEach(item -> {
             branchList.add(new Branch(item.getValue0(), item.getValue1(), item.getValue2()));
         });
         if (branchRepository.count() == 0) {
@@ -70,16 +70,16 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
         }
 
         // Admin account
-        if (!userRepository.findByEmail(Constant.AUTH.ADMIN_EMAIL).isPresent()) {
+        if (!userRepository.findByEmail(CommonConst.AUTH.ADMIN_EMAIL).isPresent()) {
             User admin = new User();
-            admin.setEmail(Constant.AUTH.ADMIN_EMAIL);
-            admin.setPassword(passwordEncoder.encode(Constant.AUTH.ADMIN_PASSWORD));
-            admin.setUsername(Constant.AUTH.ADMIN_NAME);
-            admin.setAvatar(Constant.AUTH.AVATAR);
+            admin.setEmail(CommonConst.AUTH.ADMIN_EMAIL);
+            admin.setPassword(passwordEncoder.encode(CommonConst.AUTH.ADMIN_PASSWORD));
+            admin.setUsername(CommonConst.AUTH.ADMIN_NAME);
+            admin.setAvatar(CommonConst.AUTH.AVATAR);
             Set<Role> roles = new HashSet<>();
-            roles.add(roleRepository.findByName(Constant.AUTH.ROLE.ROLE_ADMIN).get());
-            roles.add(roleRepository.findByName(Constant.AUTH.ROLE.ROLE_MODERATOR).get());
-            roles.add(roleRepository.findByName(Constant.AUTH.ROLE.ROLE_USER).get());
+            roles.add(roleRepository.findByName(CommonConst.AUTH.ROLE.ROLE_ADMIN).get());
+            roles.add(roleRepository.findByName(CommonConst.AUTH.ROLE.ROLE_MODERATOR).get());
+            roles.add(roleRepository.findByName(CommonConst.AUTH.ROLE.ROLE_USER).get());
             admin.setRoles(roles);
             admin.setEnabled(true);
             admin.setBranch(branchRepository.findByBranchName("HaNoi").get());
@@ -92,10 +92,10 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
         for (int i = 0; i < 200; i++) {
             Material material = new Material();
             material.setBranch(branchRepository.getOne(3L));
-            material.setMaterialNo(Constant.MATERIAL.SEI_KBN.B.name() + "HN" + Utils.LeadZeroNumber(i + 1, 8));
-            material.setLength(Constant.LENGTH_DEFAULT);
-            material.setSeiKbn(Constant.MATERIAL.SEI_KBN.B.name());
-            material.setStatus(Constant.MATERIAL.STATUS.ACTIVE.name());
+            material.setMaterialNo(CommonConst.MATERIAL.SEI_KBN.B.name() + "HN" + Utils.LeadZeroNumber(i + 1, 8));
+            material.setLength(CommonConst.LENGTH_DEFAULT);
+            material.setSeiKbn(CommonConst.MATERIAL.SEI_KBN.B.name());
+            material.setStatus(CommonConst.MATERIAL.STATUS.ACTIVE.name());
             material.setMaterialType(materialTypeRepository.getOne(1L));
             material.setDeleted(false);
             materialList.add(material);

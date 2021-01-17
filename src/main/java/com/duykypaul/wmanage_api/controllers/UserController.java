@@ -1,6 +1,6 @@
 package com.duykypaul.wmanage_api.controllers;
 
-import com.duykypaul.wmanage_api.common.Constant;
+import com.duykypaul.wmanage_api.common.CommonConst;
 import com.duykypaul.wmanage_api.services.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ public class UserController {
     public ResponseEntity<ByteArrayResource> getImage(@PathVariable String image) {
         if (!StringUtils.isEmpty(image)) {
             try {
-                Path filename = Paths.get(Constant.UPLOAD_ROOT, Constant.UPLOAD_USER, image);
+                Path filename = Paths.get(CommonConst.UPLOAD_ROOT, CommonConst.UPLOAD_USER, image);
                 byte[] buffer = Files.readAllBytes(filename);
                 ByteArrayResource byteArrayResource = new ByteArrayResource(buffer);
                 return ResponseEntity.ok()

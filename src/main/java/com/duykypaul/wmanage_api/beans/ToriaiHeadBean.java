@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -23,12 +25,22 @@ public class ToriaiHeadBean extends BaseBean<ToriaiHeadBean> {
 
     private Integer totalLengthExpected;
     private Integer totalQuantity;
+    private Integer totalLengthUsed;
     private Integer totalLengthRemain;
     private Integer rateUse;
     private Integer rateRemain;
 
 //    @JsonBackReference
     private BranchBean branch;
-
     private MaterialTypeBean materialType;
+
+    private List<ToriaiRetsuBean> listToriaiRetsu;
+    private List<ToriaiGyoBean> listToriaiGyo;
+    private List<ToriaiKankeiBean> listToriaiKankei;
+
+    private Integer[][] algorithmResult;
+
+    // show message on screen when toriai error
+    List<String> message = new ArrayList<>();
+
 }

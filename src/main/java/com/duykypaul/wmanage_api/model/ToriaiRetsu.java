@@ -19,8 +19,10 @@ public class ToriaiRetsu extends BaseEntity {
     private String retsuNo;
     private Integer length;
     private Integer quantity;
+
     private Integer lengthUsed;
     private Integer lengthRemaining;
+    private String bozaimotoToriaiHeadNo;
     private String listMaterialNo;
 
     @ManyToOne
