@@ -1,7 +1,7 @@
 package com.duykypaul.wmanage_api.beans;
 
 
-import com.duykypaul.wmanage_api.common.ERole;
+import com.duykypaul.wmanage_api.common.Constant.AUTH.ROLE;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,5 +13,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RoleBean {
     private Long id;
-    private ERole name;
+    private ROLE name;
 }

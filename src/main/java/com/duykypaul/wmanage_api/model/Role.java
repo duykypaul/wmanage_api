@@ -1,6 +1,6 @@
 package com.duykypaul.wmanage_api.model;
 
-import com.duykypaul.wmanage_api.common.ERole;
+import com.duykypaul.wmanage_api.common.Constant.AUTH.ROLE;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,12 +18,12 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private ERole name;
+    private ROLE name;
 
     public Role() {
     }
 
-    public Role(ERole name) {
+    public Role(ROLE name) {
         this.name = name;
     }
 }

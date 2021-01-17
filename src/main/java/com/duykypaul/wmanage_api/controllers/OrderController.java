@@ -40,6 +40,16 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/exeAlgorithm")
+    public ResponseEntity<?> exeAlgorithm() {
+        try {
+            return consignmentService.findAll();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException("Error");
+        }
+    }
+
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> findUserById(@PathVariable Long id) {
         return null;

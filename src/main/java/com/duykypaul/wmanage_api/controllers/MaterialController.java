@@ -2,9 +2,11 @@ package com.duykypaul.wmanage_api.controllers;
 
 import com.duykypaul.wmanage_api.beans.MaterialBean;
 import com.duykypaul.wmanage_api.payload.request.MaterialReq;
+import com.duykypaul.wmanage_api.payload.respone.ResponseBean;
 import com.duykypaul.wmanage_api.services.MaterialService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +43,11 @@ public class MaterialController {
 
     @PostMapping
     public ResponseEntity<?> saveAll(@RequestBody List<MaterialReq> materialBeans) {
-        return materialService.saveALL(materialBeans);
+        try {
+            return materialService.saveALL(materialBeans);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "Save data error!"));
+        }
     }
 }

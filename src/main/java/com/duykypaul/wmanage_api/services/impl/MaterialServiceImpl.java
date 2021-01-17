@@ -1,7 +1,7 @@
 package com.duykypaul.wmanage_api.services.impl;
 
 import com.duykypaul.wmanage_api.beans.MaterialBean;
-import com.duykypaul.wmanage_api.common.EMaterialStatus;
+import com.duykypaul.wmanage_api.common.Constant;
 import com.duykypaul.wmanage_api.common.Utils;
 import com.duykypaul.wmanage_api.model.Branch;
 import com.duykypaul.wmanage_api.model.Material;
@@ -65,15 +65,16 @@ public class MaterialServiceImpl implements MaterialService {
                 MaterialType materialType = materialTypeRepository.findByMaterialTypeAndDimension(item.getMaterialType(), item.getDimension())
                     .orElseThrow(() -> new RuntimeException("MaterialType code notfound"));
                 int maxMaterialNoCurrent = Integer.parseInt(materialRepository.generateMaterialNo(branch.getId()));
-                String key = branch.getBranchCode().toUpperCase();
+                String key = Constant.MATERIAL.SEI_KBN.B.name() + branch.getBranchCode().toUpperCase();
                 BranchAndMaterialNo.put(key, BranchAndMaterialNo.getOrDefault(key, maxMaterialNoCurrent));
                 for (int i = 0; i < item.getQuantity(); i++) {
                     BranchAndMaterialNo.put(key, 1 + BranchAndMaterialNo.get(key));
                     Material material = Material.builder()
                         .branch(branch)
-                        .materialNo(key + Utils.LeadZeroNumber(BranchAndMaterialNo.get(key), 5))
+                        .materialNo(key + Utils.LeadZeroNumber(BranchAndMaterialNo.get(key), 8))
+                        .seiKbn(Constant.MATERIAL.SEI_KBN.B.name())
                         .length(item.getLength())
-                        .status(EMaterialStatus.ACTIVE.name())
+                        .status(Constant.MATERIAL.STATUS.ACTIVE.name())
                         .materialType(materialType)
                         .build();
 
@@ -81,11 +82,11 @@ public class MaterialServiceImpl implements MaterialService {
                 }
             });
             materialRepository.saveAll(materials);
-            return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, "success"));
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, "Save data success!"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw new RuntimeException("Error");
         }
-        return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "error"));
     }
 
     @Override

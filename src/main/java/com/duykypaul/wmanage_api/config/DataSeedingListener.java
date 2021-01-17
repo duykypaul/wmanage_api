@@ -2,8 +2,6 @@ package com.duykypaul.wmanage_api.config;
 
 
 import com.duykypaul.wmanage_api.common.Constant;
-import com.duykypaul.wmanage_api.common.EMaterialStatus;
-import com.duykypaul.wmanage_api.common.ERole;
 import com.duykypaul.wmanage_api.common.Utils;
 import com.duykypaul.wmanage_api.model.*;
 import com.duykypaul.wmanage_api.repository.*;
@@ -41,16 +39,16 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         // Add Roles
-        if (!roleRepository.findByName(ERole.ROLE_ADMIN).isPresent()) {
-            roleRepository.save(new Role(ERole.ROLE_ADMIN));
+        if (!roleRepository.findByName(Constant.AUTH.ROLE.ROLE_ADMIN).isPresent()) {
+            roleRepository.save(new Role(Constant.AUTH.ROLE.ROLE_ADMIN));
         }
 
-        if (!roleRepository.findByName(ERole.ROLE_MODERATOR).isPresent()) {
-            roleRepository.save(new Role(ERole.ROLE_MODERATOR));
+        if (!roleRepository.findByName(Constant.AUTH.ROLE.ROLE_MODERATOR).isPresent()) {
+            roleRepository.save(new Role(Constant.AUTH.ROLE.ROLE_MODERATOR));
         }
 
-        if (!roleRepository.findByName(ERole.ROLE_USER).isPresent()) {
-            roleRepository.save(new Role(ERole.ROLE_USER));
+        if (!roleRepository.findByName(Constant.AUTH.ROLE.ROLE_USER).isPresent()) {
+            roleRepository.save(new Role(Constant.AUTH.ROLE.ROLE_USER));
         }
 
         // Add list MaterialType
@@ -72,16 +70,16 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
         }
 
         // Admin account
-        if (!userRepository.findByEmail(Constant.Auth.ADMIN_EMAIL).isPresent()) {
+        if (!userRepository.findByEmail(Constant.AUTH.ADMIN_EMAIL).isPresent()) {
             User admin = new User();
-            admin.setEmail(Constant.Auth.ADMIN_EMAIL);
-            admin.setPassword(passwordEncoder.encode(Constant.Auth.ADMIN_PASSWORD));
-            admin.setUsername(Constant.Auth.ADMIN_NAME);
-            admin.setAvatar(Constant.Auth.AVATAR);
+            admin.setEmail(Constant.AUTH.ADMIN_EMAIL);
+            admin.setPassword(passwordEncoder.encode(Constant.AUTH.ADMIN_PASSWORD));
+            admin.setUsername(Constant.AUTH.ADMIN_NAME);
+            admin.setAvatar(Constant.AUTH.AVATAR);
             Set<Role> roles = new HashSet<>();
-            roles.add(roleRepository.findByName(ERole.ROLE_ADMIN).get());
-            roles.add(roleRepository.findByName(ERole.ROLE_MODERATOR).get());
-            roles.add(roleRepository.findByName(ERole.ROLE_USER).get());
+            roles.add(roleRepository.findByName(Constant.AUTH.ROLE.ROLE_ADMIN).get());
+            roles.add(roleRepository.findByName(Constant.AUTH.ROLE.ROLE_MODERATOR).get());
+            roles.add(roleRepository.findByName(Constant.AUTH.ROLE.ROLE_USER).get());
             admin.setRoles(roles);
             admin.setEnabled(true);
             admin.setBranch(branchRepository.findByBranchName("HaNoi").get());
@@ -91,14 +89,15 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
 
         // Add list Material
         List<Material> materialList = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 200; i++) {
             Material material = new Material();
-            material.setBranch(branchRepository.getOne(1L));
-            material.setMaterialNo("SG" + Utils.LeadZeroNumber(i + 1, 5));
+            material.setBranch(branchRepository.getOne(3L));
+            material.setMaterialNo(Constant.MATERIAL.SEI_KBN.B.name() + "HN" + Utils.LeadZeroNumber(i + 1, 8));
             material.setLength(Constant.LENGTH_DEFAULT);
-            material.setStatus(EMaterialStatus.ACTIVE.name());
+            material.setSeiKbn(Constant.MATERIAL.SEI_KBN.B.name());
+            material.setStatus(Constant.MATERIAL.STATUS.ACTIVE.name());
             material.setMaterialType(materialTypeRepository.getOne(1L));
-            material.setDeleted(i % 2 == 0);
+            material.setDeleted(false);
             materialList.add(material);
         }
         if (materialRepository.count() == 0) {

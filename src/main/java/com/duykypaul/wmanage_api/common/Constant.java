@@ -17,13 +17,20 @@ public class Constant {
     public static final String COMMA = ",";
     public static final Integer LENGTH_DEFAULT = 13000;
 
-    public static class Auth {
+    public static class AUTH {
         public static final String ADMIN_EMAIL = "lminh9812@gmail.com";
         public static final String ADMIN_PASSWORD = "890*()iop";
         public static final String ADMIN_NAME = "admin";
         public static final String AVATAR = "https://gw.alipayobjects.com/zos/antfincdn/XAosXuNZyF/BiazfanxmamNRoxxVxka.png";
         public static final int EXPIRATION = 60 * 24;
         public static final String AVATAR_DEFAULT = "avatar_default.jpg";
+
+        public enum ROLE {
+            ROLE_USER,
+            ROLE_MODERATOR,
+            ROLE_ADMIN
+        }
+
     }
 
     public static class MATERIAL_TYPE {
@@ -59,32 +66,56 @@ public class Constant {
                 new Triplet<>("DN", "DaNang", 5000),
                 new Triplet<>("HN", "HaNoi", 12000)
             );
+        public enum STATUS {
+            ACTIVE,
+            INACTIVE,
+            PLAN
+        }
+
+        public enum SEI_KBN {
+            /**
+             * nguyen lieu goc
+             */
+            B,
+            /**
+             * sản phẩm xuất kho
+             */
+            P,
+            /**
+             * sản phẩm còn lại
+             */
+            R,
+            /**
+             * sản phẩm dự định
+             */
+            Y
+        }
     }
 
     public static class ORDER {
-        public static class INVENTORY_STATUS {
-            /*
-            * mới nhập kho
-            */
-            private static final String IMPORTED = "IMPORTED";
-            /*
-            * đã đưa vào kế hoạch gia công
-            */
-            private static final String PLAN = "PLAN";
-            /*
+        public enum INVENTORY_STATUS {
+            /**
+             * mới nhập kho
+             */
+            IMPORTED,
+            /**
+             * đã đưa vào kế hoạch gia công
+             */
+            PLAN,
+            /**
              * đã gia công xong
              */
-            private static final String TORIAI = "PLAN";
-            /*
-            * đã xuất kho
-             */
-            private static final String EXPORTED = "PLAN";
-        }
-        public enum INVENTORY_ORDER_STATUS {
-            IMPORTED,
-            PLAN,
             TORIAI,
+
+            /**
+             * đã xuất kho
+             */
             EXPORTED
+        }
+
+        public enum TYPE_TORIAI {
+            FAST,
+            SAVES
         }
     }
 }

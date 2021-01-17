@@ -42,10 +42,4 @@ public class Consignment extends BaseEntity {
     @JsonBackReference
     @JoinColumn(name = "material_type_id")
     private MaterialType materialType;
-
-    @ManyToOne
-    @JoinColumn(name = "cutter_head_id", insertable = false, updatable = false) // thông qua khóa ngoại cutter_head_id
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private CutterHead cutterHead;
 }

@@ -5,7 +5,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -13,18 +12,23 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderBean extends BaseBean<OrderBean> {
-    private String customer;
-    private String deliveryAddress;
+public class ToriaiHeadBean extends BaseBean<ToriaiHeadBean> {
+    private String toriaiHeadNo;
     private String status;
-    private Integer quantity;
+    //enum TYPE_TORIAI
+    private String typeToriai;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date deliveryDate;
+    private Date machiningCompletionDate;
+
+    private Integer totalLengthExpected;
+    private Integer totalQuantity;
+    private Integer totalLengthRemain;
+    private Integer rateUse;
+    private Integer rateRemain;
 
 //    @JsonBackReference
     private BranchBean branch;
 
-//    @JsonManagedReference
-    private List<ConsignmentBean> consignments;
+    private MaterialTypeBean materialType;
 }

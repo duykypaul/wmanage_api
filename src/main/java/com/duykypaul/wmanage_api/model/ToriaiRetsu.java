@@ -14,18 +14,17 @@ import javax.persistence.Table;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "cutter_line")
-public class CutterLine extends BaseEntity {
+@Table(name = "toriai_retsu")
+public class ToriaiRetsu extends BaseEntity {
+    private String retsuNo;
     private Integer length;
     private Integer quantity;
+    private Integer lengthUsed;
+    private Integer lengthRemaining;
+    private String listMaterialNo;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "cutter_head_id")
-    private CutterHead cutterHead;
-
-    @ManyToOne
-    @JsonManagedReference
-    @JoinColumn(name = "consignment_id")
-    private Consignment consignment;
+    @JoinColumn(name = "toriai_head_id")
+    private ToriaiHead toriaiHead;
 }

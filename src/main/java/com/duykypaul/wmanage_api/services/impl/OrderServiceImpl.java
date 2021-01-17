@@ -62,6 +62,7 @@ public class OrderServiceImpl implements OrderService {
                                                                     .filter(item -> item.getOrder().getId().equals(orderBean.getId()))
                                                                     .collect(Collectors.toList());
                 orderBean.setConsignments(consignmentBeansByOrderId);
+                orderBean.setQuantity(consignmentBeansByOrderId.size());
                 orderBeans.add(orderBean);
             });
         } catch (Exception e) {

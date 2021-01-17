@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
@@ -15,16 +16,19 @@ import javax.persistence.*;
 @Entity
 @Table(name = "material", uniqueConstraints=@UniqueConstraint(columnNames="materialNo"))
 public class Material extends BaseEntity {
-    private String materialNo;
+    // quy tắc sinh {seikbn}{branchCode}{8}(11) or {seikbn}{branchCode}{8}{phaseCode}_autoCrement 01->99 (14)
+    @Size(max = 14)
+    private String materialNo; // kanrino
+    private String seiKbn; // kanrino
     private Integer length;
     private String status;// active, inactive, plan
-    private String cutterHeadNo;
-    private String cutterHeadNoUsed;
-    private String cutterLineNo;
-    private String cutterMaterialNo;
-    private String cutterMaterialNoIndex;
-    private String cutterUsedMaterialNo;
-    private String cutterUsedMaterialNoIndex;
+    private String toriaiHeadNo; // sinh ra
+    private String toriaiHeadNoUsed; // duoc su dung boi
+    private String toriaiGyoNo; // dùng cho hàng nào
+    private String toriaiRetsuNo; // dùng cho cột nào
+    private String toriaiRetsuNoIndex; // đánh số thứ tự
+    private String toriaiUsedRetsuNo; // được dùng lại cho cột nào
+    private String toriaiUsedRetsuNoIndex; // đánh số thứ tự
 
     @ManyToOne
     @JsonManagedReference
