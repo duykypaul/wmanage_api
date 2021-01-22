@@ -85,9 +85,21 @@ public class CommonConst {
         public static final Type TYPE_LIST_ENTITY = new TypeToken<List<Material>>() {}.getType();
 
         public enum STATUS {
+            /**
+             * đang hiện hữu trong kho
+             */
             ACTIVE,
+            /**
+             * đã cắt
+             */
             INACTIVE,
+            /**
+             * đã được đưa vào dự kiến toriai
+             */
             PLAN,
+            /**
+             * các nguyên liệu ảo phục vụ cho việc toriai, tránh gián đoạn
+             */
             FAKE
         }
 
@@ -111,6 +123,9 @@ public class CommonConst {
         }
     }
 
+    /**
+     * CONSIGNMENT <--> ORDER
+     */
     public static class ORDER {
         public enum INVENTORY_STATUS {
             /**
@@ -136,8 +151,25 @@ public class CommonConst {
     public static class TORIAI {
         public static final int NUMBER_COLUMN_RETSU = 12;
         public enum TYPE_TORIAI {
+            /**
+             * cắt nhanh, tiết kiệm thời gian được ưu tiên trước, sau đó mới xét đến tiết kiệm
+             */
             FAST,
+
+            /**
+             * cắt tiết kiệm, tiết kiệm phần thừa được ưu tiên trước, sau đó mới xét đến thời gian
+             */
             SAVES
+        }
+        public enum STATUS {
+            /**
+             * đăng kí toriai
+             */
+            REGISTER,
+            /**
+             * đã toriai xong
+             */
+            DONE
         }
     }
 }

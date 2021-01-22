@@ -4,19 +4,15 @@ import com.duykypaul.wmanage_api.algorithm.fast.FastToriai;
 import com.duykypaul.wmanage_api.beans.*;
 import com.duykypaul.wmanage_api.common.CommonConst;
 import com.duykypaul.wmanage_api.common.Utils;
-import com.duykypaul.wmanage_api.model.Branch;
-import com.duykypaul.wmanage_api.model.Material;
-import com.duykypaul.wmanage_api.model.User;
+import com.duykypaul.wmanage_api.model.*;
 import com.duykypaul.wmanage_api.payload.respone.ResponseBean;
-import com.duykypaul.wmanage_api.repository.BranchRepository;
-import com.duykypaul.wmanage_api.repository.MaterialRepository;
-import com.duykypaul.wmanage_api.repository.MaterialTypeRepository;
-import com.duykypaul.wmanage_api.repository.ToriaiHeadRepository;
+import com.duykypaul.wmanage_api.repository.*;
 import com.duykypaul.wmanage_api.services.MaterialService;
 import com.duykypaul.wmanage_api.services.ToriaiHeadService;
 import lombok.extern.log4j.Log4j2;
 import org.javatuples.Pair;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +30,15 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
 
     @Autowired
     ToriaiHeadRepository toriaiHeadRepository;
+    
+    @Autowired
+    ToriaiRetsuRepository toriaiRetsuRepository;
+
+    @Autowired
+    ToriaiGyoRepository toriaiGyoRepository;
+
+    @Autowired
+    ToriaiKankeiRepository toriaiKankeiRepository;
 
     @Autowired
     BranchRepository branchRepository;
@@ -84,31 +89,198 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
     @Override
     public ResponseEntity<?> saveToriai(ToriaiHeadBean toriaiHeadBean) {
         try {
-            /*ToriaiHead toriaiHead = modelMapper.map(toriaiHeadBean, ToriaiHead.class);
-            Branch branch = branchRepository.findByBranchCode(orderBean.getBranch().getBranchCode())
-                .orElseThrow(() -> new RuntimeException("Branch code notfound"));
-            order.setBranch(branch);
-            Order finalOrder = orderRepository.save(order);
-            List<Consignment> consignments = new ArrayList<>();
+            String toriaiHeadNo = toriaiHeadBean.getToriaiHeadNo();
+            Branch branch = branchRepository.findByBranchName(toriaiHeadBean.getBranch().getBranchName())
+                .orElseThrow(() -> new RuntimeException("Branch name notfound"));
+            MaterialTypeBean materialTypeBean = toriaiHeadBean.getMaterialType();
+            MaterialType materialType = materialTypeRepository.findByMaterialTypeNameAndDimension(materialTypeBean.getMaterialTypeName(), materialTypeBean.getDimension())
+                .orElseThrow(() -> new RuntimeException("Branch name notfound"));
 
-            orderBean.getConsignments().forEach(item -> {
-                Consignment consignment = modelMapper.map(item, Consignment.class);
-                MaterialTypeBean materialTypeBean = item.getMaterialType();
-                MaterialType materialType = materialTypeRepository.findByMaterialTypeAndDimension(materialTypeBean.getMaterialType(), materialTypeBean.getDimension())
-                    .orElseThrow(() -> new RuntimeException("materialType notfound"));
-                consignment.setConsignmentNo(consignment.getConsignmentNo() + "N" + finalOrder.getId());
-                consignment.setMaterialType(materialType);
-                consignment.setOrder(finalOrder);
+            ToriaiHead toriaiHead = modelMapper.map(toriaiHeadBean, ToriaiHead.class);
+            toriaiHead.setBranch(branch);
+            toriaiHead.setMaterialType(materialType);
+            List<ToriaiRetsu> toriaiRetsus = modelMapper.map(toriaiHeadBean.getListToriaiRetsu(), new TypeToken<List<ToriaiRetsu>>() {}.getType());
+            List<ToriaiGyo> toriaiGyos = modelMapper.map(toriaiHeadBean.getListToriaiGyo(), new TypeToken<List<ToriaiGyo>>() {}.getType());
+            List<ToriaiKankei> toriaiKankeis = modelMapper.map(toriaiHeadBean.getListToriaiKankei(), new TypeToken<List<ToriaiKankei>>() {}.getType());
 
-                consignments.add(consignment);
+            /*
+             * Check Conflict with another toriai
+             */
+            List<Material> listMaterial = materialRepository
+                .findByMaterialNoAndStatus(toriaiHeadNo, CommonConst.MATERIAL.STATUS.PLAN.name());
 
-            });
-            consignmentRepository.saveAll(consignments);*/
+            List<Material> lstMaterialUsedByAnotherToriai = listMaterial.stream()
+                .filter(
+                    item -> !Utils.NullToBlank(item.getToriaiHeadNoUsed()).isEmpty() && !Utils.NullToBlank(item.getToriaiHeadNoUsed()).equals(toriaiHeadNo)
+                ).collect(Collectors.toList());
+
+            if (lstMaterialUsedByAnotherToriai.size() > 0) {
+                List<String> lstZaiToriaiNo = lstMaterialUsedByAnotherToriai.stream().map(Material::getToriaiHeadNoUsed).distinct().collect(Collectors.toList());
+                String message = String.join(CommonConst.COMMA, lstZaiToriaiNo) + " are using materials from " + toriaiHeadNo;
+                return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, message));
+            } else {
+                FreeRawMaterialInput(toriaiHeadNo, listMaterial);
+            }
+
+            /*
+             * release toriai body after re-algorithm and save it to db
+             */
+            toriaiGyoRepository.deleteByToriaiHeadNo(toriaiHeadNo);
+            toriaiRetsuRepository.deleteByToriaiHeadNo(toriaiHeadNo);
+            toriaiKankeiRepository.deleteByToriaiHeadNo(toriaiHeadNo);
+
+            /*
+             * update zaiKo master
+             */
+            for (int i = 0; i < toriaiRetsus.size(); i++) {
+                ToriaiRetsu retsuBean = toriaiRetsus.get(i);
+                List<String> listMaterialNo = Arrays.stream(retsuBean.getListMaterialNo().trim().split(CommonConst.SPACE, -1)).distinct().collect(Collectors.toList());
+                List<ToriaiKankei> listKankei = toriaiKankeis.stream().filter(item -> item.getRetsuNo().equals(retsuBean.getRetsuNo())).collect(Collectors.toList());
+                for (int j = 0; j < listMaterialNo.size(); j++) {
+                    for (Material master : zaikoMastersYotei) {
+                        if (listMaterialNo.get(j).equals(master.getMaterialNo())) {
+                            materialRepository.save(master);
+                            break;
+                        }
+                    }
+                    String materialNo = "";
+                    Material masterBean = materialRepository.getMaterialByMaterialNoForCompute(listMaterialNo.get(j), toriaiHeadNo);
+                    if(masterBean == null) {
+                        System.out.println("null yeah");
+                    } else {
+                        materialNo = masterBean.getMaterialNo();
+                    }
+
+                    int positionCutMaterialNo = materialNo.length() > 10 ? 11 : materialNo.length();
+
+                    /*int countGeneratedZaikoP = zaikoService.getCountGeneratedZaiko(zaiKanrinoMaster, CommonConst.PARAMETER_ZAIKO.ZAI_SEIKBN.P);*/
+                    /*
+                     * đếm số lượng mã kanrino đã được sinh ra ứng với sản phẩm hoặc vật bảo lưu (seikbn = PZR)
+                     */
+                    int countGeneratedMaterialP = materialService.getCountGeneratedMaterial(materialNo);
+                    int numberGeneratedThisBatch = 0;
+                    /*
+                     *  create zaiko seiKBN real is P
+                     */
+                    for (ToriaiKankei kankeiBean : toriaiKankeis) {
+                        ToriaiGyo gyoItem = toriaiGyos.stream().filter(item -> item.getGyoNo().equals(kankeiBean.getGyoNo())).collect(Collectors.toList()).get(0);
+                        for (int l = 0; l < kankeiBean.getQuantity(); l++) {
+                            String newMaterialNo = CommonConst.MATERIAL.SEI_KBN.P.name() + materialNo.substring(1, positionCutMaterialNo)
+                                + 1 + Utils.LeadZeroNumber(l + 1 + numberGeneratedThisBatch + countGeneratedMaterialP, 2);
+                            assert masterBean != null;
+                            Material materialBeanPItem = Material.builder()
+                                .materialType(masterBean.getMaterialType())
+                                .branch(masterBean.getBranch())
+                                .seiKbn(CommonConst.MATERIAL.SEI_KBN.Y.name())
+                                .materialNo(newMaterialNo)
+                                .toriaiHeadNo(toriaiHeadNo)
+                                .toriaiRetsuNo(retsuBean.getRetsuNo())
+                                .toriaiGyoNo(gyoItem.getGyoNo())
+                                .toriaiRetsuNoIndex((listMaterialNo.size() > 1) ? (j + 1) : null)
+                                .length(gyoItem.getLength())
+                                .status(CommonConst.MATERIAL.STATUS.PLAN.name())
+                                .build();
+                            materialRepository.saveAndFlush(materialBeanPItem);
+                        }
+                        numberGeneratedThisBatch += kankeiBean.getQuantity();
+                    }
+
+                    /*
+                     * create zaiko seiKBN real is R
+                     */
+                    String newMaterialNo;
+                    if(materialNo.length() == 14) {
+                        newMaterialNo = CommonConst.MATERIAL.SEI_KBN.R.name() + materialNo.substring(1);
+                    } else {
+                        newMaterialNo = CommonConst.MATERIAL.SEI_KBN.R.name() + materialNo.substring(1, positionCutMaterialNo) + 1;
+                    }
+                    Material materialBeanRItem = Material.builder()
+                        .materialType(masterBean.getMaterialType())
+                        .branch(masterBean.getBranch())
+                        .seiKbn(CommonConst.MATERIAL.SEI_KBN.Y.name())
+                        .materialNo(newMaterialNo)
+                        .toriaiHeadNo(toriaiHeadNo)
+                        .toriaiRetsuNo(retsuBean.getRetsuNo())
+                        .toriaiRetsuNoIndex((listMaterialNo.size() > 1) ? (j + 1) : null)
+                        .length(retsuBean.getLengthRemaining())
+                        .status(CommonConst.MATERIAL.STATUS.PLAN.name())
+                        .build();
+
+                    // phase #1
+                    if (Utils.NullToBlank(masterBean.getToriaiHeadNo()).equals(CommonConst.BLANK)) {
+                        if (listMaterialNo.size() > 1) {
+                            materialBeanRItem.setToriaiUsedRetsuNoIndex(j + 1);
+                        } else {
+                            materialBeanRItem.setToriaiUsedRetsuNoIndex(null);
+                        }
+                    } else { // phase #2
+                        materialBeanRItem.setToriaiRetsuNo(retsuBean.getRetsuNo());
+                        if (listMaterialNo.size() > 1) {
+                            materialBeanRItem.setToriaiUsedRetsuNoIndex(j + 1);
+                        } else {
+                            materialBeanRItem.setToriaiUsedRetsuNoIndex(null);
+                        }
+                    }
+
+                    materialRepository.saveAndFlush(materialBeanRItem);
+
+                    masterBean.setToriaiHeadNoUsed(toriaiHeadNo);
+                    masterBean.setStatus(CommonConst.MATERIAL.STATUS.PLAN.name());
+                    masterBean.setToriaiUsedRetsuNo(retsuBean.getRetsuNo());
+                    if (listMaterialNo.size() > 1) {
+                        masterBean.setToriaiUsedRetsuNoIndex(j + 1);
+                    } else {
+                        masterBean.setToriaiUsedRetsuNoIndex(null);
+                    }
+                    materialRepository.saveAndFlush(masterBean);
+                }
+            }
+
+            toriaiHeadRepository.save(toriaiHead);
+            toriaiRetsuRepository.saveAll(toriaiRetsus);
+            toriaiGyoRepository.saveAll(toriaiGyos);
+            toriaiKankeiRepository.saveAll(toriaiKankeis);
+
             return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, "success"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "error"));
+    }
+
+    private void FreeRawMaterialInput(String toriaiHeadNo, List<Material> listMaterial) {
+        for (Material item : listMaterial) {
+            /*
+             * raw material input have zaiSeikbn as B or R or Y (if seikbn equals to Y then in the past it has zai_you_kou = 1)
+             */
+            String seiKbn = item.getSeiKbn();
+            String toriaiHeadNoUsed = Utils.NullToBlank(item.getToriaiHeadNoUsed());
+            boolean seiKbnBRY = seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.B.name())
+                || seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.R.name())
+                || (seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.Y.name())
+                && toriaiHeadNoUsed.equals(CommonConst.BLANK));
+            /*
+             * raw material input have zaiSeikbn as Y and it has zai_you_kou = 5
+             */
+            boolean zanzaiY = seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.Y.name())
+                && item.getStatus().equals(CommonConst.MATERIAL.STATUS.PLAN.name())
+                && toriaiHeadNoUsed.equals(toriaiHeadNo)
+                && !Utils.NullToBlank(item.getToriaiHeadNo()).equals(CommonConst.BLANK);
+
+            if (seiKbnBRY || zanzaiY) {
+                if (seiKbnBRY) {
+                    item.setStatus(CommonConst.MATERIAL.STATUS.ACTIVE.name());
+                }
+                if (zanzaiY) {
+                    item.setStatus(CommonConst.MATERIAL.STATUS.PLAN.name());
+                }
+                item.setToriaiHeadNoUsed(null);
+                item.setToriaiUsedRetsuNo(null);
+                materialRepository.save(item);
+            } else {
+                materialRepository.delete(item);
+            }
+        }
     }
 
     @Override
@@ -156,7 +328,11 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
         try {
             Branch branch = branchRepository.findByBranchName(toriaiHeadBean.getBranch().getBranchName())
                 .orElseThrow(() -> new RuntimeException("Branch code notfound"));
-            
+            //todo
+            /*
+             * check conflict with another toriai
+             */
+
             for (Integer[] e : algorithmResult) {
                 Arrays.fill(e, 0);
             }
@@ -169,27 +345,27 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
 
             /*
              * lấy ra các thanh nguyên liệu gốc(đã nhập kho) hoặc dự kiến nhập kho
-             * -> dùng để đưa vào arr arrayZaikoMasterBY phục vụ cho tính toán ma trận
+             * -> dùng để đưa vào arr arrayMaterialBeanBY phục vụ cho tính toán ma trận
              */
-            List<MaterialBean> zaikoMasterBeansBY = materialService.getAllBySeiKBN_B(toriaiHeadBean.getToriaiHeadNo(), toriaiHeadBean.getBranch().getBranchName(),
+            List<MaterialBean> materialBeansBY = materialService.getAllBySeiKBN_B(toriaiHeadBean.getToriaiHeadNo(), toriaiHeadBean.getBranch().getBranchName(),
                     toriaiHeadBean.getMaterialType());
             
             /*
              * lấy ra các thanh nguyên liệu là phần thừa của toriai khác(zaiSeiKBN = R: đã có sẵn; hoặc zaiSeiKBN = Y: dự kiến đc sinh ra )
-             * -> dùng để đưa vào arr arrayZaikoMasterYR phục vụ cho tính toán ma trận
+             * -> dùng để đưa vào arr arrayMaterialBeanYR phục vụ cho tính toán ma trận
              */
-            List<MaterialBean> zaiKoMaterialBeansYR = materialService.getAllBySeiKBN_YR(toriaiHeadBean.getToriaiHeadNo(), toriaiHeadBean.getBranch().getBranchName(),
+            List<MaterialBean> materialBeansYR = materialService.getAllBySeiKBN_YR(toriaiHeadBean.getToriaiHeadNo(), toriaiHeadBean.getBranch().getBranchName(),
                 toriaiHeadBean.getMaterialType(), typeToriai, Utils.getMinInArray(order));
             
-            List<MaterialBean> arrayZaikoMasterBY = new ArrayList<>();
-            List<MaterialBean> arrayZaikoMasterYR = new ArrayList<>();
+            List<MaterialBean> arrayMaterialBeanBY = new ArrayList<>();
+            List<MaterialBean> arrayMaterialBeanYR = new ArrayList<>();
             
             if (typeToriai.equals(CommonConst.TORIAI.TYPE_TORIAI.FAST.name())) {
                 /*
                  * ưu tiên chọn nguyên liệu gốc
                  */
-                for (MaterialBean ele : zaikoMasterBeansBY) {
-                    arrayZaikoMasterBY.add(ele);
+                for (MaterialBean ele : materialBeansBY) {
+                    arrayMaterialBeanBY.add(ele);
                     if (!stock.toString().equals(CommonConst.BLANK)) stock.append(CommonConst.COMMA);
                     stock.append(ele.getLength().intValue());
                 }
@@ -209,30 +385,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                  * -> lấy thêm nguyên liệu phần thừa từ gia công khác (R, Y)
                  */
                 if (StringUtils.isEmpty(messageFromAlgorithm)) {
-                    for (MaterialBean ele : zaiKoMaterialBeansYR) {
-                        /*
-                         * cấu trúc của stock: [arrayZaikoMasterYR.getItem()..., arrayZaikoMasterBY.getItem()...]
-                         * strong dãy stock các nguyên liệu phần thừa luôn đứng trước nguyên liệu gốc
-                         */
-                        if (!stock.toString().equals(CommonConst.BLANK)) {
-                            List<Integer> lstStock = Utils.parseListInteger(stock.toString());
-
-                            List<Integer> lstStockOfYR = new ArrayList<>(lstStock.subList(0, arrayZaikoMasterYR.size()));
-                            List<Integer> lstStockOfBY = new ArrayList<>(lstStock.subList(arrayZaikoMasterYR.size(), lstStock.size()));
-
-                            lstStockOfYR.add(ele.getLength());
-                            lstStockOfYR.addAll(lstStockOfBY);
-
-                            lstStock = lstStockOfYR;
-
-                            stock = new StringBuilder(lstStock.stream().map(String::valueOf)
-                                .collect(Collectors.joining(CommonConst.COMMA)));
-                        } else {
-                            stock.append(ele.getLength());
-                        }
-                        arrayZaikoMasterYR.add(ele);
-                        if (isEnoughToUse(order, stock.toString())) break;
-                    }
+                    stock = chooseMaterialFromAnotherToriai(order, stock, materialBeansYR, arrayMaterialBeanYR);
                     messageFromAlgorithm = FastToriai.getMessageFromFastCut(order, stock.toString());
                 }
                 
@@ -240,30 +393,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                 /*
                  * ưu tiên chọn nguyên liệu thừa từ gia công khác
                  */
-                for (MaterialBean ele : zaiKoMaterialBeansYR) {
-                    /*
-                     * cấu trúc của stock: [...arrayZaikoMasterYR.getItem(), ...arrayZaikoMasterBY.getItem()]
-                     * trong dãy stock các nguyên liệu phần thừa luôn đứng trước nguyên liệu gốc
-                     */
-                    if (!stock.toString().equals(CommonConst.BLANK)) {
-                        List<Integer> lstStock = Utils.parseListInteger(stock.toString());
-
-                        List<Integer> lstStockOfYR = new ArrayList<>(lstStock.subList(0, arrayZaikoMasterYR.size()));
-                        List<Integer> lstStockOfBY = new ArrayList<>(lstStock.subList(arrayZaikoMasterYR.size(), lstStock.size()));
-
-                        lstStockOfYR.add(ele.getLength());
-                        lstStockOfYR.addAll(lstStockOfBY);
-
-                        lstStock = lstStockOfYR;
-
-                        stock = new StringBuilder(lstStock.stream().map(String::valueOf).collect(Collectors.joining(CommonConst.COMMA)));
-
-                    } else {
-                        stock.append(ele.getLength());
-                    }
-                    arrayZaikoMasterYR.add(ele);
-                    if (isEnoughToUse(order, stock.toString())) break;
-                }
+                stock = chooseMaterialFromAnotherToriai(order, stock, materialBeansYR, arrayMaterialBeanYR);
 
                 /*
                  * get Message From Algorithm
@@ -272,6 +402,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                 if (caseSpecialStr.equals(CommonConst.BLANK)) {
                     //todo
                     //messageFromAlgorithm = getMessageFromSocketServer(order, stock, strTuple, mUser);
+                    messageFromAlgorithm = FastToriai.getMessageFromFastCut(order, stock.toString());
                 } else {
                     messageFromAlgorithm = caseSpecialStr;
                 }
@@ -281,8 +412,8 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                  * -> lấy thêm nguyên liệu gốc (B, Y)
                  */
                 if (StringUtils.isEmpty(messageFromAlgorithm)) {
-                    for (MaterialBean ele : zaikoMasterBeansBY) {
-                        arrayZaikoMasterBY.add(ele);
+                    for (MaterialBean ele : materialBeansBY) {
+                        arrayMaterialBeanBY.add(ele);
                         if (!stock.toString().equals(CommonConst.BLANK)) stock.append(CommonConst.COMMA);
                         stock.append(ele.getLength());
                         if (isEnoughToUse(order, stock.toString())) break;
@@ -328,7 +459,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
 
                     zaikoMastersYotei.add(material);
                     MaterialBean materialBean = modelMapper.map(material, MaterialBean.class);
-                    arrayZaikoMasterBY.add(materialBean);
+                    arrayMaterialBeanBY.add(materialBean);
                     if (!stock.toString().equals(CommonConst.BLANK)) stock.append(CommonConst.COMMA);
                     stock.append(materialBean.getLength());
                 }
@@ -351,8 +482,8 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
              * tính toán ma trận để hiển thị
              */
             retsuIndex = setBodyAlgorithm(toriaiHeadBean, gyos, retsus, algorithmResult, retsuIndex,
-                messageFromAlgorithm, order, stock.toString(), arrayZaikoMasterBY,
-                arrayZaikoMasterYR, arrIndexRowOfGyo);
+                messageFromAlgorithm, order, stock.toString(), arrayMaterialBeanBY,
+                arrayMaterialBeanYR, arrIndexRowOfGyo);
 
             if (retsuIndex >= CommonConst.TORIAI.NUMBER_COLUMN_RETSU) {
                 toriaiHeadBean.getMessage().add("data vượt quá số cột quy định, hãy cắt bớt lô hàng");
@@ -367,6 +498,34 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
         return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), toriaiHeadBean, null));
     }
 
+    private StringBuilder chooseMaterialFromAnotherToriai(String order, StringBuilder stock, List<MaterialBean> materialBeansYR, List<MaterialBean> arrayMaterialBeanYR) {
+        for (MaterialBean ele : materialBeansYR) {
+            /*
+             * cấu trúc của stock: [...arrayMaterialBeanYR.getItem(), ...arrayMaterialBeanBY.getItem()]
+             * trong dãy stock các nguyên liệu phần thừa luôn đứng trước nguyên liệu gốc
+             */
+            if (!stock.toString().equals(CommonConst.BLANK)) {
+                List<Integer> lstStock = Utils.parseListInteger(stock.toString());
+
+                List<Integer> lstStockOfYR = new ArrayList<>(lstStock.subList(0, arrayMaterialBeanYR.size()));
+                List<Integer> lstStockOfBY = new ArrayList<>(lstStock.subList(arrayMaterialBeanYR.size(), lstStock.size()));
+
+                lstStockOfYR.add(ele.getLength());
+                lstStockOfYR.addAll(lstStockOfBY);
+
+                lstStock = lstStockOfYR;
+
+                stock = new StringBuilder(lstStock.stream().map(String::valueOf).collect(Collectors.joining(CommonConst.COMMA)));
+
+            } else {
+                stock.append(ele.getLength());
+            }
+            arrayMaterialBeanYR.add(ele);
+            if (isEnoughToUse(order, stock.toString())) break;
+        }
+        return stock;
+    }
+
     /**
      *
      * @param toriaiHeadBean
@@ -377,14 +536,14 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
      * @param messageFromAlgorithm String message <--> arn
      * @param order               Input mong muon cat (寸法 va 数量 tren man hinh toriai)
      * @param stock               Du lieu dau vao (input tai cac cot 取1 -> 取19)(hoac du lieu lay trong db)
-     * @param arrayZaikoMasterBY  map du lieu tu input stock
-     * @param arrayZaikoMasterYR  map du lieu tu input stock : select toriaiNo in screen
+     * @param arrayMaterialBeanBY  map du lieu tu input stock
+     * @param arrayMaterialBeanYR  map du lieu tu input stock : select toriaiNo in screen
      * @param arrIndexRowOfGyo
      * @return
      */
     private int setBodyAlgorithm(ToriaiHeadBean toriaiHeadBean, List<ToriaiGyoBean> gyos, List<ToriaiRetsuBean> retsus, Integer[][] algorithmResult,
                                  int retsuIndex, String messageFromAlgorithm, String order, String stock,
-                                 List<MaterialBean> arrayZaikoMasterBY, List<MaterialBean> arrayZaikoMasterYR,
+                                 List<MaterialBean> arrayMaterialBeanBY, List<MaterialBean> arrayMaterialBeanYR,
                                  List<Integer> arrIndexRowOfGyo) {
         List<Integer> lstIndexSocket = Utils.parseListInteger(messageFromAlgorithm);
         List<Integer> lstOrder = Utils.parseListInteger(order);
@@ -411,10 +570,10 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             Integer lenSteel = lstStock.get(item);
             Integer cutCounting = mapProcessToriai.get(item);
             MaterialBean materialBean;
-            if (item < arrayZaikoMasterYR.size()) {
-                materialBean = arrayZaikoMasterYR.get(item);
+            if (item < arrayMaterialBeanYR.size()) {
+                materialBean = arrayMaterialBeanYR.get(item);
             } else {
-                materialBean = arrayZaikoMasterBY.get(item - arrayZaikoMasterYR.size());
+                materialBean = arrayMaterialBeanBY.get(item - arrayMaterialBeanYR.size());
             }
             Map<String, Integer> detailCutting = new HashMap<>();
             for (int i = 0; i < lstOrder.size(); i++) {
@@ -450,7 +609,10 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                 if (retsuIndex == CommonConst.TORIAI.NUMBER_COLUMN_RETSU) {
                     return CommonConst.TORIAI.NUMBER_COLUMN_RETSU;
                 }
-                retsus.get(retsuIndex).setLength(toriaiAlgorithmBodyBeans.getSteelLength());
+                ToriaiRetsuBean retsuItem = retsus.get(retsuIndex);
+                retsuItem.setToriaiHeadNo(toriaiHeadBean.getToriaiHeadNo());
+                retsuItem.setRetsuNo(retsuIndex + 1);
+                retsuItem.setLength(toriaiAlgorithmBodyBeans.getSteelLength());
 
                 Integer lengthUsed = toriaiAlgorithmBodyBeans.getDetailCutting().entrySet().stream()
                     .map(ent -> Integer.parseInt(ent.getKey().split(CommonConst.UNDERSCORE)[0]) * ent.getValue())
@@ -460,21 +622,21 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                 if(lengthRemaining < 0) {
                     lengthRemaining = 0;
                 }
-                retsus.get(retsuIndex).setLengthUsed(lengthUsed);
-                retsus.get(retsuIndex).setLengthRemaining(lengthRemaining);
+                retsuItem.setLengthUsed(lengthUsed);
+                retsuItem.setLengthRemaining(lengthRemaining);
 
                 String seiKbn = toriaiAlgorithmBodyBeans.getMaterialBean().getSeiKbn();
                 String materialNo = toriaiAlgorithmBodyBeans.getMaterialBean().getMaterialNo();
                 if ((seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.Y.name()) && materialNo.startsWith(CommonConst.MATERIAL.SEI_KBN.R.name()))
                     || seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.R.name())) {
-                    retsus.get(retsuIndex).setBozaimotoToriaiHeadNo(toriaiAlgorithmBodyBeans.getMaterialBean().getToriaiHeadNo());
+                    retsuItem.setBozaimotoToriaiHeadNo(toriaiAlgorithmBodyBeans.getMaterialBean().getToriaiHeadNo());
                 } else {
-                    retsus.get(retsuIndex).setBozaimotoToriaiHeadNo(CommonConst.BLANK);
+                    retsuItem.setBozaimotoToriaiHeadNo(CommonConst.BLANK);
                 }
 
-                retsus.get(retsuIndex).setQuantity(item.size());
+                retsuItem.setQuantity(item.size());
                 String listMaterialNo = item.stream().map(el -> el.getMaterialBean().getMaterialNo()).distinct().collect(Collectors.joining(CommonConst.SPACE));
-                retsus.get(retsuIndex).setListMaterialNo(listMaterialNo);
+                retsuItem.setListMaterialNo(listMaterialNo);
                 retsuIndex++;
             }
         }

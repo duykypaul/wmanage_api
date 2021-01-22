@@ -10,8 +10,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ToriaiGyoBean extends BaseBean<ToriaiGyoBean> {
-    private String gyoNo;
+    private String toriaiHeadNo;
+    private Integer gyoNo;
     private Integer length;
     private Integer quantity;
-    private ToriaiHeadBean toriaiHead;
 }

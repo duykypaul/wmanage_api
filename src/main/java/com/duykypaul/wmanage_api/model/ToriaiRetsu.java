@@ -1,13 +1,10 @@
 package com.duykypaul.wmanage_api.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -16,7 +13,8 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @Table(name = "toriai_retsu")
 public class ToriaiRetsu extends BaseEntity {
-    private String retsuNo;
+    private String toriaiHeadNo;
+    private Integer retsuNo;
     private Integer length;
     private Integer quantity;
 
@@ -24,9 +22,4 @@ public class ToriaiRetsu extends BaseEntity {
     private Integer lengthRemaining;
     private String bozaimotoToriaiHeadNo;
     private String listMaterialNo;
-
-    @ManyToOne
-    @JsonManagedReference
-    @JoinColumn(name = "toriai_head_id")
-    private ToriaiHead toriaiHead;
 }

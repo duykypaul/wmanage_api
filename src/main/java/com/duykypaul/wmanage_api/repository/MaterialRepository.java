@@ -33,8 +33,7 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
     List<Material> getAllBySeiKBN_B(String toriaiHeadNo, String branchName, String materialTypeName, String dimension);
 
     @Query("FROM Material m " +
-        "WHERE ((COALESCE(m.toriaiHeadNoUsed, '') = '' AND m.status = 'ACTIVE') " +
-        "OR (m.toriaiHeadNoUsed = :toriaiHeadNo AND m.status = 'PLAN')) " +
+        "WHERE (COALESCE(m.toriaiHeadNoUsed, '') = '' OR (m.toriaiHeadNoUsed = :toriaiHeadNo AND m.status = 'PLAN')) " +
         "AND ((m.seiKbn = 'Y' AND m.status = 'PLAN') OR (m.seiKbn = 'R' AND (m.status = 'ACTIVE' OR m.status = 'PLAN'))) " +
         "AND m.materialNo LIKE 'R%' " +
         "AND (:toriaiHeadNo = '' OR m.toriaiHeadNo <> :toriaiHeadNo)" +
@@ -46,4 +45,20 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
         "AND m.isDeleted = false " +
         "ORDER BY m.seiKbn, m.createdAt")
     List<Material> getAllBySeiKBN_YR(String toriaiHeadNo, String branchName, String materialTypeName, String dimension, Integer minOrder);
+
+    @Query("FROM Material m " +
+        "WHERE m.status = ?2 AND m.isDeleted = false " +
+        "AND (m.toriaiHeadNo = ?1 OR m.toriaiHeadNoUsed = ?1)")
+    List<Material> findByMaterialNoAndStatus(String toriaiHeadNo, String name);
+
+    @Query("FROM Material WHERE materialNo = ?1 AND (toriaiHeadNoUsed IS NULL OR toriaiHeadNoUsed = '' OR toriaiHeadNoUsed = ?2) AND isDeleted = false")
+    Material getMaterialByMaterialNoForCompute(String materialNo, String toriaiHeadNo);
+
+    @Query(value = "SELECT COALESCE(MAX(CONVERT(RIGHT(z.material_no, 2), UNSIGNED INTEGER)), 0) " +
+        "FROM material z " +
+        "WHERE SUBSTRING(z.material_no, 2) LIKE :materialNo " +
+        "  AND SUBSTRING(z.material_no, 1, 1) in ('P', 'R') " +
+        "  AND z.is_deleted = false " +
+        "  AND length(z.material_no) = 14", nativeQuery = true)
+    int getCountGeneratedMaterial(String materialNo);
 }

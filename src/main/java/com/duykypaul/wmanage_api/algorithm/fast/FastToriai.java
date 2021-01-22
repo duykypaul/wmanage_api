@@ -1,6 +1,8 @@
 package com.duykypaul.wmanage_api.algorithm.fast;
 
 import com.duykypaul.wmanage_api.common.CommonConst;
+import com.duykypaul.wmanage_api.common.Utils;
+import lombok.val;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,10 +25,7 @@ public class FastToriai {
         /*
          * arrOrderInit = 2000, 3000, 5000, 1500, 7000
          */
-        int[] arrOrderInit = Arrays.stream(order.split(CommonConst.COMMA))
-            .map(s -> Integer.parseInt(s.trim()))
-            .mapToInt(Integer::intValue)
-            .toArray();
+        val arrOrderInit = Utils.parseArrayInt(order);
 
         /*
          * sắp xếp mảng order theo thứ tự từ cao đến thấp
@@ -48,10 +47,7 @@ public class FastToriai {
             .mapToInt(ele -> ele)
             .toArray();
 
-        int[] arrStockInit = Arrays.stream(stock.split(CommonConst.COMMA))
-            .map(s -> Integer.parseInt(s.trim()))
-            .mapToInt(Integer::intValue)
-            .toArray();
+        val arrStockInit = Utils.parseArrayInt(stock);
 
         /*
          * sắp xếp mảng stock theo thứ tự từ cao đến thấp

@@ -1,13 +1,14 @@
 package com.duykypaul.wmanage_api.repository;
 
 import com.duykypaul.wmanage_api.model.Order;
+import com.duykypaul.wmanage_api.model.ToriaiHead;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ToriaiHeadRepository extends JpaRepository<Order, Long> {
+public interface ToriaiHeadRepository extends JpaRepository<ToriaiHead, Long> {
 
     List<Order> findAllByIsDeletedIsFalse();
 

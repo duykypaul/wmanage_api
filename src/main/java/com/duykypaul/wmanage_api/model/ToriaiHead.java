@@ -16,6 +16,7 @@ import java.util.Date;
 @Table(name = "toriai_head")
 public class ToriaiHead extends BaseEntity {
     private String toriaiHeadNo;
+    // enum STATUS TORIAI
     private String status;
     //enum TYPE_TORIAI
     private String typeToriai;

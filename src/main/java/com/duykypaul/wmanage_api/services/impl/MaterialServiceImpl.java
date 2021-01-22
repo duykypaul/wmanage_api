@@ -145,4 +145,16 @@ public class MaterialServiceImpl implements MaterialService {
         }
         return materialBeans;
     }
+
+    @Override
+    public int getCountGeneratedMaterial(String materialNo) {
+        String subMaterialNo = "";
+        if (materialNo.length() >= 11) {
+            subMaterialNo = materialNo.substring(1, 11);
+        } else {
+            subMaterialNo = materialNo.substring(1);
+        }
+
+        return materialRepository.getCountGeneratedMaterial(subMaterialNo + "%");
+    }
 }

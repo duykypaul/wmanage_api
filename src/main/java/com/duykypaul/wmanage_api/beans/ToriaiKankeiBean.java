@@ -10,8 +10,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ToriaiKankeiBean extends BaseBean<ToriaiKankeiBean> {
-    private Integer length;
-    private ToriaiHeadBean toriaiHead;
-    private ToriaiRetsuBean toriaiRetsu;
-    private ToriaiGyoBean toriaiGyo;
+    private String toriaiHeadNo;
+    private Integer retsuNo;
+    private Integer gyoNo;
+    private Integer quantity;
 }

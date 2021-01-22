@@ -38,6 +38,13 @@ public class Utils {
         return Arrays.stream(str.split(CommonConst.COMMA)).map(s -> Integer.parseInt(s.trim())).collect(Collectors.toList());
     }
 
+    public static int[] parseArrayInt(String str) {
+        return Arrays.stream(str.split(CommonConst.COMMA))
+            .map(s -> Integer.parseInt(s.trim()))
+            .mapToInt(Integer::intValue)
+            .toArray();
+    }
+
     public static boolean checkDistinctArray(List<Integer> lstOrder) {
         return lstOrder.stream().distinct().count() == 1;
     }

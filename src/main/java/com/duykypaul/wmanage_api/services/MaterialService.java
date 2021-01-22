@@ -19,4 +19,6 @@ public interface MaterialService {
     List<MaterialBean> getAllBySeiKBN_B(String toriaiHeadNo, String branchName, MaterialTypeBean materialType);
 
     List<MaterialBean> getAllBySeiKBN_YR(String toriaiHeadNo, String branchName, MaterialTypeBean materialType, String typeToriai, Integer minInArray);
+
+    int getCountGeneratedMaterial(String materialNo);
 }
