@@ -1,9 +1,11 @@
 package com.duykypaul.wmanage_api.beans;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
@@ -12,7 +14,7 @@ import java.util.Date;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConsignmentBean extends BaseBean<ConsignmentBean> {
+public class ConsignmentBean extends BaseBean<ConsignmentBean> implements Serializable {
     private String consignmentNo;
     private String customer;
     private String deliveryAddress;
@@ -28,4 +30,7 @@ public class ConsignmentBean extends BaseBean<ConsignmentBean> {
 
 //    @JsonBackReference
     private MaterialTypeBean materialType;
+
+    @JsonIgnore
+    private ToriaiGyoBean toriaiGyo;
 }

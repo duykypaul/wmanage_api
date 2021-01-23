@@ -53,6 +53,12 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
     MaterialService materialService;
 
     @Autowired
+    ConsignmentRepository consignmentRepository;
+
+    @Autowired
+    OrderRepository orderRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     /**
@@ -62,28 +68,44 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
 
     @Override
     public ResponseEntity<?> findAll() {
-        List<OrderBean> orderBeans = new ArrayList<>();
-        /*List<ConsignmentBean> consignmentBeans = new ArrayList<>();
+        List<ToriaiHeadBean> toriaiHeadBeans = new ArrayList<>();
         try {
-            List<Consignment> consignments = toriaiHeadRepository.findAllByIsDeletedIsFalse();
-            consignments.forEach(consignment -> {
-                ConsignmentBean consignmentBean = modelMapper.map(consignment, ConsignmentBean.class);
-                consignmentBeans.add(consignmentBean);
+            List<ToriaiHead> toriaiHeads = toriaiHeadRepository.findAllByIsDeletedIsFalse();
+            List<ToriaiRetsu> toriaiRetsus = toriaiRetsuRepository.findAllByIsDeletedIsFalse();
+            List<ToriaiGyo> toriaiGyos = toriaiGyoRepository.findAllByIsDeletedIsFalse();
+            List<ToriaiKankei> toriaiKankeis = toriaiKankeiRepository.findAllByIsDeletedIsFalse();
+            toriaiHeads.forEach(toriaiHead -> {
+                ToriaiHeadBean toriaiHeadBean = modelMapper.map(toriaiHead, ToriaiHeadBean.class);
+
+                List<ToriaiRetsu> toriaiRetsusPerToriai = toriaiRetsus.stream()
+                    .filter(item -> item.getToriaiHeadNo().equals(toriaiHead.getToriaiHeadNo()))
+                    .sorted(Comparator.comparing(ToriaiRetsu::getRetsuNo))
+                    .collect(Collectors.toList());
+                List<ToriaiRetsuBean> toriaiRetsusBeanPerToriai = modelMapper.map(toriaiRetsusPerToriai, new TypeToken<List<ToriaiRetsuBean>>(){}.getType());
+                toriaiHeadBean.setListToriaiRetsu(toriaiRetsusBeanPerToriai);
+
+                List<ToriaiGyo> toriaiGyosPerToriai = toriaiGyos.stream()
+                    .filter(item -> item.getToriaiHeadNo().equals(toriaiHead.getToriaiHeadNo()))
+                    .sorted(Comparator.comparing(ToriaiGyo::getGyoNo))
+                    .collect(Collectors.toList());
+                List<ToriaiGyoBean> toriaiGyosBeanPerToriai = modelMapper.map(toriaiGyosPerToriai, new TypeToken<List<ToriaiGyoBean>>(){}.getType());
+                toriaiHeadBean.setListToriaiGyo(toriaiGyosBeanPerToriai);
+
+                List<ToriaiKankei> toriaiKankeisPerToriai = toriaiKankeis.stream()
+                    .filter(item -> item.getToriaiHeadNo().equals(toriaiHead.getToriaiHeadNo()))
+                    .sorted(Comparator.comparing(ToriaiKankei::getGyoNo)
+                        .thenComparing(ToriaiKankei::getRetsuNo))
+                    .collect(Collectors.toList());
+
+                List<ToriaiKankeiBean> toriaiKankeisBeanPerToriai = modelMapper.map(toriaiKankeisPerToriai, new TypeToken<List<ToriaiKankeiBean>>(){}.getType());
+                toriaiHeadBean.setListToriaiKankei(toriaiKankeisBeanPerToriai);
+                toriaiHeadBeans.add(toriaiHeadBean);
             });
-            List<Order> orders = orderRepository.findAllByIsDeletedIsFalse();
-            orders.forEach(order -> {
-                OrderBean orderBean = modelMapper.map(order, OrderBean.class);
-                List<ConsignmentBean> consignmentBeansByOrderId = consignmentBeans.stream()
-                                                                    .filter(item -> item.getOrder().getId().equals(orderBean.getId()))
-                                                                    .collect(Collectors.toList());
-                orderBean.setConsignments(consignmentBeansByOrderId);
-                orderBean.setQuantity(consignmentBeansByOrderId.size());
-                orderBeans.add(orderBean);
-            });
+
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        }*/
-        return ResponseEntity.ok(orderBeans);
+        }
+        return ResponseEntity.ok(toriaiHeadBeans);
     }
 
     @Override
@@ -100,8 +122,26 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             toriaiHead.setBranch(branch);
             toriaiHead.setMaterialType(materialType);
             List<ToriaiRetsu> toriaiRetsus = modelMapper.map(toriaiHeadBean.getListToriaiRetsu(), new TypeToken<List<ToriaiRetsu>>() {}.getType());
-            List<ToriaiGyo> toriaiGyos = modelMapper.map(toriaiHeadBean.getListToriaiGyo(), new TypeToken<List<ToriaiGyo>>() {}.getType());
             List<ToriaiKankei> toriaiKankeis = modelMapper.map(toriaiHeadBean.getListToriaiKankei(), new TypeToken<List<ToriaiKankei>>() {}.getType());
+
+            List<Consignment> consignmentsPerToriai = new ArrayList<>();
+            Set<Order> ordersPerToriai = new HashSet<>();
+            List<ToriaiGyo> toriaiGyos = new ArrayList<>();
+            toriaiHeadBean.getListToriaiGyo().forEach(toriaiGyoBean -> {
+                ToriaiGyo toriaiGyo = modelMapper.map(toriaiGyoBean, ToriaiGyo.class);
+                Consignment consignment = consignmentRepository
+                    .findByConsignmentNoAndLength(toriaiGyoBean.getConsignment().getConsignmentNo(), toriaiGyoBean.getLength())
+                    .orElseThrow(() -> new RuntimeException("consignmentNo and length notfound"));
+                toriaiGyo.setConsignment(consignment);
+                consignment.setStatus(CommonConst.ORDER.INVENTORY_STATUS.PLAN.name());
+                consignmentsPerToriai.add(consignment);
+                ordersPerToriai.add(consignment.getOrder());
+                toriaiGyos.add(toriaiGyo);
+            });
+
+            ordersPerToriai.forEach(item -> {
+                item.setStatus(CommonConst.ORDER.INVENTORY_STATUS.PLAN.name());
+            });
 
             /*
              * Check Conflict with another toriai
@@ -241,6 +281,9 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             toriaiGyoRepository.saveAll(toriaiGyos);
             toriaiKankeiRepository.saveAll(toriaiKankeis);
 
+            consignmentRepository.saveAll(consignmentsPerToriai);
+            orderRepository.saveAll(ordersPerToriai);
+
             return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, "success"));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -341,7 +384,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             List<Integer> arrIndexRowOfGyo = orderAndArrIndexRowOfGyo.getValue1();
 
             StringBuilder stock = new StringBuilder();
-            String messageFromAlgorithm = "";
+            String messageFromAlgorithm;
 
             /*
              * lấy ra các thanh nguyên liệu gốc(đã nhập kho) hoặc dự kiến nhập kho
@@ -664,12 +707,12 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
         /*
          * set ma trận kankei
          */
+        List<ToriaiGyoBean> gyosClone = gyos.stream().map(ToriaiGyoBean::Clone).collect(Collectors.toList());
         for (int j = 0; j < lstToriaiAlgorithmBodyBeans.size(); j++) {
-            for (int i = 0; i < gyos.size(); i++) {
-
-                String key = gyos.get(i).getLength() + CommonConst.UNDERSCORE + i;
+            for (int i = 0; i < gyosClone.size(); i++) {
+                String key = gyosClone.get(i).getLength() + CommonConst.UNDERSCORE + i;
                 Integer timesCutting = lstToriaiAlgorithmBodyBeans.get(j).get(0).getDetailCutting().get(key);
-                Integer quantity = gyos.get(i).getQuantity();
+                Integer quantity = gyosClone.get(i).getQuantity();
                 if (timesCutting != null && quantity != 0) {
                     if (quantity <= timesCutting) {
                         algorithmResult[i][j] = quantity;
@@ -678,7 +721,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                             .get(0)
                             .getDetailCutting()
                             .replace(key, timesCutting * lstToriaiAlgorithmBodyBeans.get(j).size() - quantity);
-                        gyos.get(i).setQuantity(0);
+                        gyosClone.get(i).setQuantity(0);
                     } else {
                         algorithmResult[i][j] = timesCutting;
                         lstToriaiAlgorithmBodyBeans
@@ -686,7 +729,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                             .get(0)
                             .getDetailCutting()
                             .replace(key, 0);
-                        gyos.get(i).setQuantity(quantity - timesCutting);
+                        gyosClone.get(i).setQuantity(quantity - timesCutting);
                     }
                 }
             }

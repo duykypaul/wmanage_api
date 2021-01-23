@@ -1,6 +1,5 @@
 package com.duykypaul.wmanage_api.repository;
 
-import com.duykypaul.wmanage_api.model.ToriaiGyo;
 import com.duykypaul.wmanage_api.model.ToriaiKankei;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +9,7 @@ import java.util.List;
 
 public interface ToriaiKankeiRepository extends JpaRepository<ToriaiKankei, Long> {
 
-    List<ToriaiGyo> findAllByIsDeletedIsFalse();
+    List<ToriaiKankei> findAllByIsDeletedIsFalse();
 
     @Modifying
     @Query("UPDATE ToriaiKankei o SET o.isDeleted = true WHERE o.id IN ?1")

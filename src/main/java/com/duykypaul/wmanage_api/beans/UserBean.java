@@ -22,6 +22,9 @@ public class UserBean extends BaseBean<UserBean> {
     @Size(min = 3, max = 20)
     private String username;
     //@NotBlank
+    @Size(min = 6, max = 30)
+    private String password;
+    //@NotBlank
     @Email
     @Size(max = 50)
     private String email;
@@ -33,7 +36,4 @@ public class UserBean extends BaseBean<UserBean> {
     private String avatar;
     private String permission;
     private boolean isEnabled;
-    //@NotBlank
-    @Size(min = 6, max = 30)
-    private String password;
 }
