@@ -16,4 +16,9 @@ public interface ConsignmentRepository extends JpaRepository<Consignment, Long> 
     void deleteByIdIn(Long[] ids);
 
     Optional<Consignment> findByConsignmentNoAndLength(String consignmentNo, Integer length);
+
+    @Query("FROM Consignment c WHERE c.consignmentNo IN ?1 AND c.length IN ?2 AND c.isDeleted = false")
+    List<Consignment> findAllByConsignmentNoAndLength(List<String> listConsignmentNo, List<Integer> listLengthSteel);
+
+    List<Consignment> findALlByOrder_Id(Long id);
 }

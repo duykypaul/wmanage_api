@@ -86,7 +86,7 @@ public class CommonConst {
 
         public enum STATUS {
             /**
-             * đang hiện hữu trong kho
+             * đang hiện hữu trong kho AVAILABLE
              */
             ACTIVE,
             /**
@@ -94,7 +94,7 @@ public class CommonConst {
              */
             INACTIVE,
             /**
-             * đã được đưa vào dự kiến toriai
+             * đã được đưa vào dự kiến toriai TORIAI_PLANNED
              */
             PLAN,
             /**
@@ -169,7 +169,7 @@ public class CommonConst {
             /**
              * đã toriai xong
              */
-            DONE
+            COMPLETE
         }
     }
 }

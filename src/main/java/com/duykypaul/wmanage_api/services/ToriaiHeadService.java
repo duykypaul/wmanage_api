@@ -19,4 +19,6 @@ public interface ToriaiHeadService {
     ResponseEntity<?> saveToriai(ToriaiHeadBean toriaiHeadBean);
 
     ResponseEntity<?> exeAlgorithm(ToriaiHeadBean toriaiHeadBean, User user);
+
+    ResponseEntity<?> updateToriai(ToriaiHeadBean toriaiHeadBean, boolean isDelete, boolean isUpdate);
 }

@@ -61,4 +61,13 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
         "  AND z.is_deleted = false " +
         "  AND length(z.material_no) = 14", nativeQuery = true)
     int getCountGeneratedMaterial(String materialNo);
+
+    @Query("FROM " +
+        "    Material m" +
+        "    WHERE " +
+        "    m.status = :status " +
+        "    AND m.isDeleted = false " +
+        "    AND (m.toriaiHeadNo = :toriaiHeadNo " +
+        "    OR m.toriaiHeadNoUsed = :toriaiHeadNo)")
+    List<Material> getMaterialByToriai(String toriaiHeadNo, String status);
 }

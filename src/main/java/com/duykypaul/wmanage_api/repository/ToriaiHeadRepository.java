@@ -17,4 +17,8 @@ public interface ToriaiHeadRepository extends JpaRepository<ToriaiHead, Long> {
 
     @Query("SELECT COALESCE(MAX(SUBSTRING(m.toriaiHeadNo, 3, 5)), 0) FROM ToriaiHead m WHERE m.branch.id = ?1")
     String getMaxNoCurrent(Long id);
+
+    @Modifying
+    @Query("UPDATE ToriaiHead o SET o.status = ?2 WHERE o.toriaiHeadNo = ?1")
+    void completeToriai(String toriaiHeadNo, String status);
 }

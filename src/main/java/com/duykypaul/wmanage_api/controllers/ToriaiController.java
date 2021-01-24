@@ -59,6 +59,16 @@ public class ToriaiController extends BaseController {
         }
     }
 
+    @PostMapping("/complete")
+    public ResponseEntity<?> completeToriai(@RequestBody ToriaiHeadBean toriaiHeadBean) {
+        try {
+            return toriaiHeadService.updateToriai(toriaiHeadBean, false, true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException("Error");
+        }
+    }
+
     @DeleteMapping
     public ResponseEntity<?> deleteAllByIdIn(@RequestBody Long[] ids) {
         try {

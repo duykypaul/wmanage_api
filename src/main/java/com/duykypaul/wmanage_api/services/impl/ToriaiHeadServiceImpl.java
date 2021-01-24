@@ -298,17 +298,18 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
              */
             String seiKbn = item.getSeiKbn();
             String toriaiHeadNoUsed = Utils.NullToBlank(item.getToriaiHeadNoUsed());
+            String torisizi = Utils.NullToBlank(item.getToriaiHeadNo());
             boolean seiKbnBRY = seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.B.name())
                 || seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.R.name())
                 || (seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.Y.name())
-                && toriaiHeadNoUsed.equals(CommonConst.BLANK));
+                && torisizi.equals(CommonConst.BLANK));
             /*
              * raw material input have zaiSeikbn as Y and it has zai_you_kou = 5
              */
             boolean zanzaiY = seiKbn.equals(CommonConst.MATERIAL.SEI_KBN.Y.name())
                 && item.getStatus().equals(CommonConst.MATERIAL.STATUS.PLAN.name())
                 && toriaiHeadNoUsed.equals(toriaiHeadNo)
-                && !Utils.NullToBlank(item.getToriaiHeadNo()).equals(CommonConst.BLANK);
+                && !torisizi.equals(CommonConst.BLANK);
 
             if (seiKbnBRY || zanzaiY) {
                 if (seiKbnBRY) {
@@ -539,6 +540,63 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             throw new RuntimeException(ex);
         }
         return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), toriaiHeadBean, null));
+    }
+
+    @Override
+    public ResponseEntity<?> updateToriai(ToriaiHeadBean toriaiHeadBean, boolean isDelete, boolean isUpdate) {
+        try {
+            String toriaiHeadNo = toriaiHeadBean.getToriaiHeadNo();
+            List<String> listConsignmentNo = toriaiHeadBean.getListToriaiGyo().stream()
+                .map(item -> item.getConsignment().getConsignmentNo())
+                .distinct()
+                .collect(Collectors.toList());
+
+            List<Integer> listLengthSteel = toriaiHeadBean.getListToriaiGyo().stream()
+                .map(ToriaiGyoBean::getLength)
+                .distinct()
+                .collect(Collectors.toList());
+
+            if(isUpdate) {
+                /*UPDATE MATERIAL*/
+                List<Material> materials = materialRepository.getMaterialByToriai(toriaiHeadNo, CommonConst.MATERIAL.STATUS.PLAN.name());
+                List<Material> listMaterialExpectPR
+                    = materials.stream()
+                    .filter(item -> Utils.NullToBlank(item.getToriaiHeadNo()).equals(toriaiHeadNo))
+                    .collect(Collectors.toList());
+                for (Material item : listMaterialExpectPR) {
+                    String seiKbn = item.getMaterialNo().substring(0, 1);
+                    item.setSeiKbn(seiKbn);
+                    if (Utils.NullToBlank(item.getToriaiHeadNoUsed()).equals(CommonConst.BLANK)) {
+                        item.setStatus(CommonConst.MATERIAL.STATUS.ACTIVE.name());
+                    }
+                    materialRepository.saveAndFlush(item);
+                }
+                /*UPDATE CONSIGNMENTS*/
+                List<Consignment> consignments = consignmentRepository.findAllByConsignmentNoAndLength(listConsignmentNo, listLengthSteel);
+                consignments.forEach(consignment -> {
+                    consignment.setStatus(CommonConst.ORDER.INVENTORY_STATUS.TORIAI.name());
+                });
+                consignmentRepository.saveAll(consignments);
+
+                /*UPDATE ORDER*/
+                Set<Order> ordersPerToriai = consignments.stream().map(Consignment::getOrder).collect(Collectors.toSet());
+                ordersPerToriai.forEach(order -> {
+                    List<Consignment> consignmentsByOrder = consignmentRepository.findALlByOrder_Id(order.getId());
+                    long numberToriai = consignmentsByOrder.stream().filter(item -> item.getStatus().equals(CommonConst.ORDER.INVENTORY_STATUS.TORIAI.name())).count();
+                    if(numberToriai == consignmentsByOrder.size()) {
+                        order.setStatus(CommonConst.ORDER.INVENTORY_STATUS.TORIAI.name());
+                    }
+                });
+                orderRepository.saveAll(ordersPerToriai);
+
+                toriaiHeadRepository.completeToriai(toriaiHeadNo, CommonConst.TORIAI.STATUS.COMPLETE.name());
+            }
+
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, null));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, null));
+        }
     }
 
     private StringBuilder chooseMaterialFromAnotherToriai(String order, StringBuilder stock, List<MaterialBean> materialBeansYR, List<MaterialBean> arrayMaterialBeanYR) {
