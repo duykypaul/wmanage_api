@@ -93,7 +93,7 @@ public class DataSeedingListener implements ApplicationListener<ContextRefreshed
             Material material = new Material();
             material.setBranch(branchRepository.getOne(3L));
             material.setMaterialNo(CommonConst.MATERIAL.SEI_KBN.B.name() + "HN" + Utils.LeadZeroNumber(i + 1, 8));
-            material.setLength(CommonConst.LENGTH_DEFAULT);
+            material.setLength(CommonConst.MATERIAL.LENGTH_DEFAULT);
             material.setSeiKbn(CommonConst.MATERIAL.SEI_KBN.B.name());
             material.setStatus(CommonConst.MATERIAL.STATUS.ACTIVE.name());
             material.setMaterialType(materialTypeRepository.getOne(1L));

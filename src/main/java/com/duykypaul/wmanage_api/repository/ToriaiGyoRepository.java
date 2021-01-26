@@ -26,4 +26,5 @@ public interface ToriaiGyoRepository extends JpaRepository<ToriaiGyo, Long> {
     @Modifying
     @Query(value = "DELETE FROM ToriaiGyo as gyo WHERE gyo.toriaiHeadNo = ?1")
     void deleteByToriaiHeadNo(String toriaiHeadNo);
+
 }

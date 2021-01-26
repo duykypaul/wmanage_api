@@ -14,7 +14,7 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "material", uniqueConstraints=@UniqueConstraint(columnNames="materialNo"))
+@Table(name = "material", uniqueConstraints=@UniqueConstraint(columnNames={"materialNo", "seiKbn", "toriaiHeadNo"}))
 public class Material extends BaseEntity {
     // quy tắc sinh {seikbn}{branchCode}{8}(11) or {seikbn}{branchCode}{8}{phaseCode}_autoCrement 01->99 (14)
     @Size(max = 14)

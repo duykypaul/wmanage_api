@@ -19,11 +19,9 @@ public class CommonConst {
     public static final String BACKUP_DB = "backupDB";
     public static final int DB_PORT = 3308;
     public static final String COMMA = ",";
-    public static final Integer LENGTH_DEFAULT = 13000;
     public static final String BLANK = "";
     public static final String SPACE = " ";
     public static final String UNDERSCORE = "_";
-    public static final String STEEL_BLADE_THICKNESS = "5";
     public static final String NUMBER_0 = "0";
     public static final String NUMBER_1 = "1";
     public static final String NUMBER_2 = "2";
@@ -83,6 +81,7 @@ public class CommonConst {
     public static class MATERIAL {
         public static final Type TYPE_LIST_BEAN = new TypeToken<List<MaterialBean>>() {}.getType();
         public static final Type TYPE_LIST_ENTITY = new TypeToken<List<Material>>() {}.getType();
+        public static final Integer LENGTH_DEFAULT = 13000;
 
         public enum STATUS {
             /**
@@ -150,6 +149,8 @@ public class CommonConst {
 
     public static class TORIAI {
         public static final int NUMBER_COLUMN_RETSU = 12;
+        public static final String STEEL_BLADE_THICKNESS = "5";
+
         public enum TYPE_TORIAI {
             /**
              * cắt nhanh, tiết kiệm thời gian được ưu tiên trước, sau đó mới xét đến tiết kiệm

@@ -42,5 +42,6 @@ public class ToriaiHeadBean extends BaseBean<ToriaiHeadBean> {
 
     // show message on screen when toriai error
     List<String> message = new ArrayList<>();
+    List<String> toriaiHeadNos = new ArrayList<>();
 
 }

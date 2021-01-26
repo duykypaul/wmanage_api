@@ -69,10 +69,10 @@ public class ToriaiController extends BaseController {
         }
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> deleteAllByIdIn(@RequestBody Long[] ids) {
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteAllByIdIn(@RequestBody ToriaiHeadBean toriaiHeadBean) {
         try {
-            return toriaiHeadService.deleteAllByIdIn(ids);
+            return toriaiHeadService.deleteAllByToriaiHeadNoIn(toriaiHeadBean.getToriaiHeadNos());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new RuntimeException("Error");

@@ -492,7 +492,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                     Material material  = Material.builder()
                         .materialNo(materialNo)
                         .seiKbn(CommonConst.MATERIAL.SEI_KBN.B.name() )
-                        .length(CommonConst.LENGTH_DEFAULT)
+                        .length(CommonConst.MATERIAL.LENGTH_DEFAULT)
                         .status(CommonConst.MATERIAL.STATUS.ACTIVE.name())
                         .toriaiHeadNo(CommonConst.BLANK)
                         .toriaiHeadNoUsed(CommonConst.BLANK)
@@ -559,18 +559,28 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             if(isUpdate) {
                 /*UPDATE MATERIAL*/
                 List<Material> materials = materialRepository.getMaterialByToriai(toriaiHeadNo, CommonConst.MATERIAL.STATUS.PLAN.name());
-                List<Material> listMaterialExpectPR
-                    = materials.stream()
-                    .filter(item -> Utils.NullToBlank(item.getToriaiHeadNo()).equals(toriaiHeadNo))
-                    .collect(Collectors.toList());
-                for (Material item : listMaterialExpectPR) {
-                    String seiKbn = item.getMaterialNo().substring(0, 1);
-                    item.setSeiKbn(seiKbn);
-                    if (Utils.NullToBlank(item.getToriaiHeadNoUsed()).equals(CommonConst.BLANK)) {
-                        item.setStatus(CommonConst.MATERIAL.STATUS.ACTIVE.name());
-                    }
-                    materialRepository.saveAndFlush(item);
+                long numberMaterialY = materials.stream()
+                    .filter(material -> Utils.NullToBlank(material.getSeiKbn()).equals(CommonConst.MATERIAL.SEI_KBN.Y.name())
+                        && Utils.NullToBlank(material.getToriaiHeadNoUsed()).equals(toriaiHeadNo))
+                    .count();
+
+                if(numberMaterialY > 0) {
+                    String MESSAGE_005 = "Toriai cannot be completed because it contains the virtual material";
+                    return ResponseEntity.ok(new ResponseBean(HttpStatus.NOT_ACCEPTABLE.value(), null, MESSAGE_005));
                 }
+
+                materials.forEach(material -> {
+                    if(Utils.NullToBlank(material.getToriaiHeadNo()).equals(toriaiHeadNo)) {
+                        String seiKbn = material.getMaterialNo().substring(0, 1);
+                        material.setSeiKbn(seiKbn);
+                        if (Utils.NullToBlank(material.getToriaiHeadNoUsed()).equals(CommonConst.BLANK)) {
+                            material.setStatus(CommonConst.MATERIAL.STATUS.ACTIVE.name());
+                        }
+                    } else if(Utils.NullToBlank(material.getToriaiHeadNoUsed()).equals(toriaiHeadNo)){
+                        material.setStatus(CommonConst.MATERIAL.STATUS.INACTIVE.name());
+                    }
+                });
+
                 /*UPDATE CONSIGNMENTS*/
                 List<Consignment> consignments = consignmentRepository.findAllByConsignmentNoAndLength(listConsignmentNo, listLengthSteel);
                 consignments.forEach(consignment -> {
@@ -591,12 +601,110 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
 
                 toriaiHeadRepository.completeToriai(toriaiHeadNo, CommonConst.TORIAI.STATUS.COMPLETE.name());
             }
+            if(isDelete) {
+                System.out.println("isDelete: " + true);
+            }
 
             return ResponseEntity.ok(new ResponseBean(HttpStatus.OK.value(), null, null));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, null));
+            return ResponseEntity.ok(new ResponseBean(HttpStatus.BAD_REQUEST.value(), null, "System error"));
         }
+    }
+
+    @Override
+    public ResponseEntity<?> deleteAllByToriaiHeadNoIn(List<String> toriaiHeadNos) {
+        HttpStatus httpStatus;
+        StringBuilder message = new StringBuilder();
+        List<String> mapStatus = new ArrayList<>();
+        List<String> mapMessage = new ArrayList<>();
+        List<String> toriaiHeadNosConflict = new ArrayList<>();
+
+        toriaiHeadNos.sort(Comparator.reverseOrder());
+        try {
+            for (String zaiToriaiNo : toriaiHeadNos) {
+                List<Material> materials = materialRepository.getMaterialByToriai(zaiToriaiNo, CommonConst.MATERIAL.STATUS.PLAN.name());
+                List<Material> listMaterialUsedByAnotherToriai = materials.stream()
+                    .filter(
+                        item -> !Utils.NullToBlank(item.getToriaiHeadNoUsed()).isEmpty() && !Utils.NullToBlank(item.getToriaiHeadNoUsed()).equals(zaiToriaiNo)
+                    ).collect(Collectors.toList());
+
+                List<String> lstZaiToriaiNo;
+
+                if (listMaterialUsedByAnotherToriai.size() > 0) {
+                    lstZaiToriaiNo = listMaterialUsedByAnotherToriai.stream().map(Material::getToriaiHeadNoUsed).distinct().collect(Collectors.toList());
+                    mapStatus.add(HttpStatus.CONFLICT.name());
+                    String MESSAGE_004 = "Cannot be removed {1} because {0} are using the remainder of {1}.";
+                    mapMessage.add(MESSAGE_004
+                        .replace("{0}", String.join(CommonConst.COMMA, lstZaiToriaiNo))
+                        .replace("{1}", zaiToriaiNo)
+                    );
+                    toriaiHeadNosConflict.add(zaiToriaiNo);
+                } else {
+                    FreeRawMaterialInput(zaiToriaiNo, materials);
+                    List<ToriaiGyo> toriaiGyos = toriaiGyoRepository.findByToriaiHeadNo(zaiToriaiNo);
+
+                    List<String> listConsignmentNo = toriaiGyos.stream()
+                        .map(item -> item.getConsignment().getConsignmentNo())
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                    List<Integer> listLengthSteel = toriaiGyos.stream()
+                        .map(ToriaiGyo::getLength)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                    /*UPDATE CONSIGNMENTS*/
+                    List<Consignment> consignments = consignmentRepository.findAllByConsignmentNoAndLength(listConsignmentNo, listLengthSteel);
+                    consignments.forEach(consignment -> {
+                        consignment.setStatus(CommonConst.ORDER.INVENTORY_STATUS.IMPORTED.name());
+                    });
+                    consignmentRepository.saveAll(consignments);
+
+                    /*UPDATE ORDER*/
+                    Set<Order> ordersPerToriai = consignments.stream().map(Consignment::getOrder).collect(Collectors.toSet());
+                    ordersPerToriai.forEach(order -> {
+                        List<Consignment> consignmentsByOrder = consignmentRepository.findALlByOrder_Id(order.getId());
+                        long numberPlan = consignmentsByOrder.stream().filter(item -> item.getStatus().equals(CommonConst.ORDER.INVENTORY_STATUS.PLAN.name())).count();
+                        if(numberPlan > 0) {
+                            order.setStatus(CommonConst.ORDER.INVENTORY_STATUS.PLAN.name());
+                        } else {
+                            order.setStatus(CommonConst.ORDER.INVENTORY_STATUS.IMPORTED.name());
+                        }
+                    });
+                    orderRepository.saveAll(ordersPerToriai);
+                    toriaiHeadRepository.deleteByToriaiHeadNo(zaiToriaiNo);
+                    toriaiRetsuRepository.deleteLogicByToriaiHeadNo(zaiToriaiNo);
+                    toriaiGyoRepository.deleteLogicByToriaiHeadNo(zaiToriaiNo);
+                    toriaiKankeiRepository.deleteLogicByToriaiHeadNo(zaiToriaiNo);
+
+                    mapStatus.add(HttpStatus.OK.name());
+                    mapMessage.add(HttpStatus.OK.name());
+                }
+            }
+            if (mapStatus.contains(HttpStatus.BAD_REQUEST.name())) {
+                httpStatus = HttpStatus.BAD_REQUEST;
+                message = new StringBuilder("System error");
+            } else {
+                if (mapStatus.stream().filter(item -> item.equals(HttpStatus.OK.name())).count() == mapStatus.size()) {
+                    httpStatus = HttpStatus.OK;
+                    String MESSAGE_006 = "You removed Materials No: {0}";
+                    message = new StringBuilder(MESSAGE_006.replace("{0}", String.join(CommonConst.COMMA, toriaiHeadNos)));
+                } else {
+                    httpStatus = HttpStatus.CONFLICT;
+                    for (int i = 0; i < mapStatus.size(); i++) {
+                        if (mapStatus.get(i).equals(httpStatus.name())) {
+                            if (message.length() > 0) message.append(System.lineSeparator());
+                            message.append(mapMessage.get(i));
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.error(ex.getMessage(), ex);
+            throw new RuntimeException(ex);
+        }
+        return ResponseEntity.ok(new ResponseBean(httpStatus.value(), toriaiHeadNosConflict, message.toString()));
     }
 
     private StringBuilder chooseMaterialFromAnotherToriai(String order, StringBuilder stock, List<MaterialBean> materialBeansYR, List<MaterialBean> arrayMaterialBeanYR) {
@@ -719,7 +827,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
                     .map(ent -> Integer.parseInt(ent.getKey().split(CommonConst.UNDERSCORE)[0]) * ent.getValue())
                     .reduce(0, Integer::sum);
 
-                int lengthRemaining = toriaiAlgorithmBodyBeans.getSteelLength() - lengthUsed - toriaiAlgorithmBodyBeans.getCutCounting() * Integer.parseInt(CommonConst.STEEL_BLADE_THICKNESS);
+                int lengthRemaining = toriaiAlgorithmBodyBeans.getSteelLength() - lengthUsed - toriaiAlgorithmBodyBeans.getCutCounting() * Integer.parseInt(CommonConst.TORIAI.STEEL_BLADE_THICKNESS);
                 if(lengthRemaining < 0) {
                     lengthRemaining = 0;
                 }
@@ -872,7 +980,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
         int[] arrIndexStockUsed = new int[arrOrder.length];
         Arrays.fill(arrIndexStockUsed, -1);
 
-        int unit = Integer.parseInt(CommonConst.STEEL_BLADE_THICKNESS);
+        int unit = Integer.parseInt(CommonConst.TORIAI.STEEL_BLADE_THICKNESS);
         int returnValue = 0;
         int indexLoop = 0;
         while (Arrays.stream(arrIndexStockUsed).filter(item -> item == -1).count() > 0) {
@@ -892,7 +1000,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
             if (Arrays.stream(arrIndexStockUsed).filter(item -> item == -1).count() > 0) {
                 returnValue++;
                 arrStock = Arrays.copyOf(arrStock, arrStock.length + 1);
-                arrStock[arrStock.length - 1] = CommonConst.LENGTH_DEFAULT;
+                arrStock[arrStock.length - 1] = CommonConst.MATERIAL.LENGTH_DEFAULT;
             }
             indexLoop = arrStock.length - 1;
         }
@@ -962,7 +1070,7 @@ public class ToriaiHeadServiceImpl implements ToriaiHeadService {
         if (stock.equals(CommonConst.BLANK)) return CommonConst.BLANK;
         List<Integer> lstOrder = Utils.parseListInteger(order);
         List<Integer> lstStock =  Utils.parseListInteger(stock);
-        int unit = Integer.parseInt(CommonConst.STEEL_BLADE_THICKNESS);
+        int unit = Integer.parseInt(CommonConst.TORIAI.STEEL_BLADE_THICKNESS);
 
         int numberOrder = lstOrder.size();
         StringBuilder returnValue = new StringBuilder();

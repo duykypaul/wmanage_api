@@ -5,6 +5,8 @@ import com.duykypaul.wmanage_api.beans.ToriaiHeadBean;
 import com.duykypaul.wmanage_api.model.User;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public interface ToriaiHeadService {
     ResponseEntity<?> findAll();
 
@@ -21,4 +23,6 @@ public interface ToriaiHeadService {
     ResponseEntity<?> exeAlgorithm(ToriaiHeadBean toriaiHeadBean, User user);
 
     ResponseEntity<?> updateToriai(ToriaiHeadBean toriaiHeadBean, boolean isDelete, boolean isUpdate);
+
+    ResponseEntity<?> deleteAllByToriaiHeadNoIn(List<String> toriaiHeadNos);
 }

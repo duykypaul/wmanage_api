@@ -2,8 +2,6 @@ package com.duykypaul.wmanage_api.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,7 +16,6 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @Table(name = "consignments")
-@JsonIdentityInfo(generator= ObjectIdGenerators.UUIDGenerator.class, property="@id")
 public class Consignment extends BaseEntity {
     /*
      * quy tắc sinh chuỗi {materialTypeCode}{dimension}N{orderID}
@@ -48,6 +45,7 @@ public class Consignment extends BaseEntity {
     @JoinColumn(name = "material_type_id")
     private MaterialType materialType;
 
-    @OneToOne(mappedBy = "consignment")
-    private ToriaiGyo toriaiGyo;
+//    @OneToOne(mappedBy = "consignment")
+////    @Where(clause = "is_deleted = false")
+//    private ToriaiGyo toriaiGyo;
 }

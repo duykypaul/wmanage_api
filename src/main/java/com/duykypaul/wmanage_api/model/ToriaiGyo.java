@@ -1,10 +1,9 @@
 package com.duykypaul.wmanage_api.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -16,7 +15,6 @@ import javax.persistence.Table;
 @Setter
 @NoArgsConstructor
 @Table(name = "toriai_gyo")
-@JsonIdentityInfo(generator= ObjectIdGenerators.UUIDGenerator.class, property="@id")
 public class ToriaiGyo extends BaseEntity {
     private String toriaiHeadNo;
     private Integer gyoNo;
@@ -25,5 +23,6 @@ public class ToriaiGyo extends BaseEntity {
 
     @OneToOne
     @JoinColumn(name = "consignment_id")
+    @Where(clause = "is_deleted = false")
     private Consignment consignment;
 }

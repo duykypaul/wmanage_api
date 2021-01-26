@@ -113,7 +113,7 @@ public class FastToriai {
      */
     private static void fastCutMain(List<FastCutBean> listArn, int[] arrCheckMaterialCanBeCut,
                                 int numberMaterialRemoved, int[] arrStock, int[] arrOrder) {
-        int unit = Integer.parseInt(CommonConst.STEEL_BLADE_THICKNESS);
+        int unit = Integer.parseInt(CommonConst.TORIAI.STEEL_BLADE_THICKNESS);
         while (true) {
             int[] arrRemain = new int[arrStock.length];
             OptionalInt minOder = Arrays.stream(arrOrder).min();
