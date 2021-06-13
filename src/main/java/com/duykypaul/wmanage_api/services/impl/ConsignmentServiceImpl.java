@@ -9,7 +9,6 @@ import com.duykypaul.wmanage_api.repository.OrderRepository;
 import com.duykypaul.wmanage_api.services.ConsignmentService;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,20 +21,28 @@ import java.util.List;
 @Transactional
 public class ConsignmentServiceImpl implements ConsignmentService {
 
-    @Autowired
+    final
     OrderRepository orderRepository;
 
-    @Autowired
+    final
     ConsignmentRepository consignmentRepository;
 
-    @Autowired
+    final
     BranchRepository branchRepository;
 
-    @Autowired
+    final
     MaterialTypeRepository materialTypeRepository;
 
-    @Autowired
+    final
     ModelMapper modelMapper;
+
+    public ConsignmentServiceImpl(OrderRepository orderRepository, ConsignmentRepository consignmentRepository, BranchRepository branchRepository, MaterialTypeRepository materialTypeRepository, ModelMapper modelMapper) {
+        this.orderRepository = orderRepository;
+        this.consignmentRepository = consignmentRepository;
+        this.branchRepository = branchRepository;
+        this.materialTypeRepository = materialTypeRepository;
+        this.modelMapper = modelMapper;
+    }
 
     @Override
     public ResponseEntity<?> findAll() {
