@@ -17,12 +17,13 @@ public class BaseController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
                 String userCd = auth.getName();
-                return userService.findByUsername(userCd);
+                if(!userCd.equals("anonymousUser")) {
+                    return userService.findByUsername(userCd);
+                }
             }
-            return new User();
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
-            return new User();
         }
+        return null;
     }
 }
