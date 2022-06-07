@@ -1,5 +1,6 @@
 package com.duykypaul.wmanage_api.model;
 
+import com.duykypaul.wmanage_api.common.ContextUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,8 +39,20 @@ public abstract class BaseEntity {
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifiedAt;
 
     private boolean isDeleted;
+
+    @PrePersist
+    @PreUpdate
+    public void onSaveOrUpdate() {
+        if (null == this.createdBy) {
+            this.createdBy = getCurrentAuditor();
+        }
+    }
+
+    public String getCurrentAuditor() {
+        return ContextUtils.getCurrentUsername().orElse(null);
+    }
 }
